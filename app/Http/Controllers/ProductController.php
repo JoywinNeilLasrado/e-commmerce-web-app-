@@ -57,12 +57,10 @@ class ProductController extends Controller
     public function show($slug)
     {
         $product = Product::with(['phoneModel.brand', 'images', 'variants.condition', 'reviews.user'])
+            ->withCount('reviews')
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
-
-        // Increment views
-        $product->incrementViews();
 
         // Get related products
         $relatedProducts = Product::with(['phoneModel.brand', 'variants'])

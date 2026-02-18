@@ -13,11 +13,13 @@ class AddressController extends Controller
     {
         $validated = $request->validate([
             'label' => 'nullable|string|max:255',
-            'address_line1' => 'required|string|max:255',
-            'address_line2' => 'nullable|string|max:255',
+            'full_name' => 'required|string|max:255',
+            'address_line_1' => 'required|string|max:255',
+            'address_line_2' => 'nullable|string|max:255',
             'city' => 'required|string|max:255',
             'state' => 'required|string|max:255',
             'postal_code' => 'required|string|max:20',
+            'country' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
         ]);
 

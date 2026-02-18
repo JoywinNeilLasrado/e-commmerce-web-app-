@@ -46,7 +46,7 @@ class ProfileController extends Controller
     public function storeAddress(Request $request)
     {
         $validated = $request->validate([
-            'label' => ['required', 'string', 'max:255'],
+            'label' => ['nullable', 'string', 'max:255'],
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'address_line_1' => ['required', 'string', 'max:255'],
@@ -59,9 +59,13 @@ class ProfileController extends Controller
         ]);
 
         // If this is the first address or marked as default, unset other defaults
-        if (auth()->user()->addresses()->count() === 0 || $request->has('is_default')) {
+        $isDefault = auth()->user()->addresses()->count() === 0 || $request->has('is_default');
+        
+        if ($isDefault) {
             auth()->user()->addresses()->update(['is_default' => false]);
             $validated['is_default'] = true;
+        } else {
+            $validated['is_default'] = false;
         }
 
         auth()->user()->addresses()->create($validated);

@@ -1,127 +1,221 @@
 @extends('layouts.app')
 
-@section('title', $product->title . ' - Refurbished Phones Shop')
+@section('title', $product->title . ' — PhoneShop')
 
 @section('content')
 <div class="bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
         <!-- Breadcrumb -->
-        <nav class="mb-8 flex text-sm text-gray-500" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}" class="hover:text-indigo-600">Home</a>
-            <span class="mx-2">/</span>
-            <a href="{{ route('products.index') }}" class="hover:text-indigo-600">Products</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-900">{{ $product->title }}</span>
+        <nav class="flex items-center gap-2 text-sm text-gray-400 mb-10 fade-in-section">
+            <a href="{{ route('home') }}" class="hover:text-blue-600 transition-colors">Home</a>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="{{ route('products.index') }}" class="hover:text-blue-600 transition-colors">Products</a>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-gray-700 font-medium truncate max-w-xs">{{ $product->title }}</span>
         </nav>
 
-        <div class="lg:grid lg:grid-cols-2 lg:gap-x-12">
-            <!-- Image Gallery -->
-            <div class="space-y-4">
-                <div class="aspect-w-4 aspect-h-3 bg-gray-100 rounded-2xl overflow-hidden border border-gray-100 group relative">
-                    <img id="mainImage" src="{{ $product->primary_image ?? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800' }}" 
-                         alt="{{ $product->title }}" 
-                         class="h-full w-full object-cover transition-all duration-500 group-hover:scale-105">
-                    
-                    <div class="absolute top-4 left-4">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-indigo-800 shadow-sm backdrop-blur-sm">
-                            Certified Refurbished
-                        </span>
+        <div class="grid lg:grid-cols-12 gap-12">
+
+            <!-- Left: Image Gallery -->
+            <div class="lg:col-span-5 fade-in-section">
+                <div class="sticky top-28">
+                    <!-- Main Image -->
+                    <div class="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl overflow-hidden aspect-square mb-4 group">
+                        <img id="mainImage"
+                             src="{{ $product->primary_image ?? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800' }}"
+                             alt="{{ $product->title }}"
+                             class="w-full h-full object-contain p-10 transition-all duration-500 group-hover:scale-105">
+
+                        @php $condition = $product->variants->first()?->condition?->name ?? 'Refurbished'; @endphp
+                        <div class="absolute top-5 left-5">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
+                                @if($condition === 'Excellent') bg-emerald-100 text-emerald-700
+                                @elseif($condition === 'Good') bg-blue-100 text-blue-700
+                                @else bg-amber-100 text-amber-700
+                                @endif">
+                                <span class="w-1.5 h-1.5 rounded-full
+                                    @if($condition === 'Excellent') bg-emerald-500
+                                    @elseif($condition === 'Good') bg-blue-500
+                                    @else bg-amber-500
+                                    @endif"></span>
+                                {{ $condition }} Condition
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Thumbnails -->
+                    @if($product->images->count() > 0)
+                        <div class="grid grid-cols-5 gap-2">
+                            <button onclick="changeImage('{{ $product->primary_image }}', this)"
+                                    class="aspect-square rounded-xl overflow-hidden border-2 border-blue-500 bg-gray-50 p-1.5 transition-all">
+                                <img src="{{ $product->primary_image }}" class="w-full h-full object-contain">
+                            </button>
+                            @foreach($product->images->take(4) as $image)
+                                <button onclick="changeImage('{{ $image->image_path }}', this)"
+                                        class="aspect-square rounded-xl overflow-hidden border-2 border-transparent bg-gray-50 p-1.5 hover:border-blue-300 transition-all">
+                                    <img src="{{ $image->image_path }}" class="w-full h-full object-contain">
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Middle: Product Info -->
+            <div class="lg:col-span-4 fade-in-section delay-100">
+                <div class="mb-2">
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">{{ $product->phoneModel->brand->name }}</span>
+                </div>
+                <h1 class="text-3xl font-black text-gray-900 leading-tight mb-4">{{ $product->title }}</h1>
+
+                <!-- Rating -->
+                @php $avgRating = $product->average_rating; @endphp
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="flex items-center gap-1">
+                        @for($i = 1; $i <= 5; $i++)
+                            <svg class="w-4 h-4 {{ $i <= round($avgRating) ? 'text-amber-400' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        @endfor
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{ number_format($avgRating, 1) }}</span>
+                    <span class="text-sm text-gray-400">({{ $product->reviews_count }} reviews)</span>
+                </div>
+
+                <!-- Description -->
+                <p class="text-gray-600 leading-relaxed mb-8 text-sm">
+                    {{ $product->description ?? 'Expertly restored to original functionality. This device has passed our 90-point inspection and comes with a full 12-month warranty for your peace of mind.' }}
+                </p>
+
+                <!-- What's in the Box -->
+                @if($product->whats_in_box)
+                    <div class="bg-gray-50 rounded-2xl p-6 mb-8">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">What's in the Box</h3>
+                        <p class="text-sm text-gray-700">{{ $product->whats_in_box }}</p>
+                    </div>
+                @endif
+
+                <!-- Warranty -->
+                @if($product->warranty_months)
+                    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-8 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-blue-900">{{ $product->warranty_months }}-Month Warranty Included</p>
+                            <p class="text-xs text-blue-600 mt-0.5">Full coverage for any technical defaults</p>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Trust Badges -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="text-center bg-gray-50 rounded-xl p-3">
+                        <svg class="w-5 h-5 text-blue-600 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <p class="text-[10px] font-bold text-gray-600">Warranty</p>
+                    </div>
+                    <div class="text-center bg-gray-50 rounded-xl p-3">
+                        <svg class="w-5 h-5 text-emerald-600 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <p class="text-[10px] font-bold text-gray-600">30-Day Returns</p>
+                    </div>
+                    <div class="text-center bg-gray-50 rounded-xl p-3">
+                        <svg class="w-5 h-5 text-purple-600 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                        <p class="text-[10px] font-bold text-gray-600">Free Shipping</p>
                     </div>
                 </div>
 
-                @if($product->images->count() > 0)
-                    <div class="grid grid-cols-4 gap-4">
-                        <button onclick="changeImage('{{ $product->primary_image }}', this)" class="aspect-w-1 aspect-h-1 rounded-lg border-2 border-indigo-500 p-1 bg-white">
-                            <img src="{{ $product->primary_image }}" class="w-full h-full object-cover rounded-md">
-                        </button>
-                        @foreach($product->images as $image)
-                            <button onclick="changeImage('{{ $image->image_path }}', this)" class="aspect-w-1 aspect-h-1 rounded-lg border-2 border-transparent p-1 bg-white hover:border-indigo-200 transition-all">
-                                <img src="{{ $image->image_path }}" class="w-full h-full object-cover rounded-md">
-                            </button>
-                        @endforeach
+                <!-- Reviews Section -->
+                @if($product->reviews->count() > 0)
+                    <div class="mt-10">
+                        <h3 class="text-lg font-black text-gray-900 mb-5">Customer Reviews</h3>
+                        <div class="space-y-4">
+                            @foreach($product->reviews->where('is_approved', true)->take(3) as $review)
+                                <div class="bg-gray-50 rounded-2xl p-5">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                                            </div>
+                                            <span class="text-sm font-bold text-gray-900">{{ $review->user->name }}</span>
+                                        </div>
+                                        <div class="flex">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <svg class="w-3.5 h-3.5 {{ $i <= $review->rating ? 'text-amber-400' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    @if($review->comment)
+                                        <p class="text-sm text-gray-600 leading-relaxed">{{ $review->comment }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @endif
             </div>
 
-            <!-- Product Info -->
-            <div class="mt-10 lg:mt-0 flex flex-col">
-                <div class="border-b border-gray-100 pb-6">
-                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">{{ $product->title }}</h1>
-                    <div class="mt-3 flex items-center space-x-4">
-                        <div class="flex items-center text-yellow-400">
-                             @for($i=0; $i<5; $i++)
-                                <span>{{ $i < round($product->average_rating) ? '⭐' : '☆' }}</span>
-                             @endfor
-                        </div>
-                        <span class="text-sm text-gray-500">({{ $product->reviews_count }} customer reviews)</span>
-                        <span class="text-gray-300">|</span>
-                        <span class="text-sm font-medium text-indigo-600">Brand: {{ $product->phoneModel->brand->name }}</span>
-                    </div>
-                </div>
+            <!-- Right: Buy Box -->
+            <div class="lg:col-span-3 fade-in-section delay-200">
+                <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-xl shadow-gray-100/80 sticky top-28">
+                    <form action="{{ route('cart.store') }}" method="POST">
+                        @csrf
 
-                <div class="mt-6">
-                    <div class="flex items-center justify-between">
-                        <div class="text-4xl font-bold text-gray-900">₹{{ number_format($product->base_price, 0) }}</div>
-                        <div class="text-sm text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full flex items-center">
-                            <span class="mr-1">✓</span> In Stock
+                        <!-- Price -->
+                        <div class="mb-6">
+                            <p class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    In Stock
+                                </span>
+                                <span class="text-xs text-gray-400">Free delivery</span>
+                            </div>
                         </div>
-                    </div>
-                    <p class="mt-4 text-gray-600 leading-relaxed">{{ $product->description ?? 'Expertly restored to original functionality. This device has passed our 90-point inspection and comes with a full 12-month warranty for your peace of mind.' }}</p>
-                </div>
 
-                <!-- Add to Cart Form -->
-                <form action="{{ route('cart.store') }}" method="POST" class="mt-10 space-y-8">
-                    @csrf
-                    
-                    <!-- Variant Selection -->
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Select Variant</h3>
-                        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            @foreach($product->variants as $variant)
-                                <label class="relative border rounded-xl p-4 flex cursor-pointer hover:border-indigo-600 transition-all {{ $loop->first ? 'border-indigo-600 ring-2 ring-indigo-600/10' : 'border-gray-200' }}">
-                                    <input type="radio" name="variant_id" value="{{ $variant->id }}" class="sr-only" {{ $loop->first ? 'checked' : '' }}>
-                                    <div class="flex-1 flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900">{{ $variant->storage }} | {{ $variant->color }}</span>
-                                        <span class="mt-1 text-xs text-gray-500">Condition: {{ $variant->condition->name }} Grade</span>
-                                        <span class="mt-2 text-sm font-bold text-indigo-600">₹{{ number_format($variant->price, 0) }}</span>
-                                    </div>
-                                    <div class="flex items-center text-indigo-600 check-icon {{ $loop->first ? 'block' : 'hidden' }}">
-                                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
+                        <!-- Variant Selection -->
+                        @if($product->variants->count() > 0)
+                            <div class="mb-5">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Select Variant</label>
+                                <div class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
+                                    @foreach($product->variants as $variant)
+                                        <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
+                                            <input type="radio" name="variant_id" value="{{ $variant->id }}"
+                                                   class="sr-only" {{ $loop->first ? 'checked' : '' }}>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-gray-900">{{ $variant->storage }} · {{ $variant->color }}</p>
+                                                <p class="text-xs text-gray-500">{{ $variant->condition->name }} Grade</p>
+                                            </div>
+                                            <span class="text-sm font-black text-blue-600 flex-shrink-0">₹{{ number_format($variant->price, 0) }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
-                    <div class="flex items-end space-x-4">
-                        <div class="w-32">
-                            <label for="quantity" class="text-sm font-bold text-gray-900 uppercase tracking-wider">Quantity</label>
-                            <select name="quantity" id="quantity" class="mt-1 block w-full border-gray-200 rounded-lg py-3 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium text-gray-700">
-                                @for($i=1; $i<=5; $i++)
+                        <!-- Quantity -->
+                        <div class="mb-6">
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Quantity</label>
+                            <select name="quantity" class="w-full border border-gray-200 rounded-xl py-2.5 px-4 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 bg-gray-50">
+                                @for($i = 1; $i <= 5; $i++)
                                     <option value="{{ $i }}">{{ $i }}</option>
                                 @endfor
                             </select>
                         </div>
-                        <button type="submit" class="flex-1 w-full bg-indigo-600 border border-transparent rounded-lg py-3 px-8 text-base font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg shadow-indigo-600/20 transform active:scale-[0.98] transition-all">
-                            Add to Cart
-                        </button>
-                    </div>
-                </form>
 
-                <!-- Features/Warranty -->
-                <div class="mt-12 grid grid-cols-3 gap-6 border-t border-gray-100 pt-8">
-                    <div class="text-center">
-                        <div class="text-2xl mb-1">🛡️</div>
-                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">1-Year Warranty</p>
-                    </div>
-                    <div class="text-center border-x border-gray-100 px-4">
-                        <div class="text-2xl mb-1">✅</div>
-                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Quality Checked</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl mb-1">🔄</div>
-                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">30-Day Return</p>
-                    </div>
+                        <!-- CTA Buttons -->
+                        <div class="space-y-3">
+                            <button type="submit"
+                                    class="btn-ripple w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                Add to Cart
+                            </button>
+                            <a href="{{ route('checkout.index') }}"
+                               class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                Buy Now
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -129,38 +223,21 @@
 </div>
 
 <script>
-    function changeImage(src, btn) {
-        document.getElementById('mainImage').src = src;
-        
-        // Update thumbnail borders
-        const buttons = btn.parentElement.querySelectorAll('button');
-        buttons.forEach(b => {
-             b.classList.remove('border-indigo-500');
-             b.classList.add('border-transparent');
-        });
-        btn.classList.remove('border-transparent');
-        btn.classList.add('border-indigo-500');
-    }
-
-    // Handle variant selection styling
-    document.querySelectorAll('input[name="variant_id"]').forEach(input => {
-        input.addEventListener('change', function() {
-            // Remove styles from all
-            document.querySelectorAll('input[name="variant_id"]').forEach(i => {
-                const label = i.closest('label');
-                label.classList.remove('border-indigo-600', 'ring-2', 'ring-indigo-600/10');
-                label.classList.add('border-gray-200');
-                label.querySelector('.check-icon').classList.add('hidden');
-            });
-
-            // Add styles to selected
-            if (this.checked) {
-                const label = this.closest('label');
-                label.classList.remove('border-gray-200');
-                label.classList.add('border-indigo-600', 'ring-2', 'ring-indigo-600/10');
-                label.querySelector('.check-icon').classList.remove('hidden');
-            }
-        });
+function changeImage(src, btn) {
+    const mainImg = document.getElementById('mainImage');
+    mainImg.style.opacity = '0';
+    mainImg.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        mainImg.src = src;
+        mainImg.style.opacity = '1';
+        mainImg.style.transform = 'scale(1)';
+    }, 200);
+    btn.parentElement.querySelectorAll('button').forEach(b => {
+        b.classList.remove('border-blue-500');
+        b.classList.add('border-transparent');
     });
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-blue-500');
+}
 </script>
 @endsection

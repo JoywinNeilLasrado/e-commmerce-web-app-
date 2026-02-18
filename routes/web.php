@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/compare', [\App\Http\Controllers\CompareController::class, 'index'])->name('compare.index');
+
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
