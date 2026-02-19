@@ -128,7 +128,7 @@
                             @foreach($cart->items as $item)
                                 <div class="flex gap-3">
                                     <div class="w-12 h-12 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex items-center justify-center p-1">
-                                        <img src="{{ $item->productVariant->product->primary_image }}" class="w-full h-full object-contain">
+                                        <img src="{{ $item->productVariant->product->primary_image_url }}" class="w-full h-full object-contain">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs font-bold text-gray-900 truncate">{{ $item->productVariant->product->title }}</p>

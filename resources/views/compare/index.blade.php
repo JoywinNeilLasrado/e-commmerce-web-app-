@@ -68,7 +68,7 @@
                                     <div class="flex flex-col items-center gap-3">
                                         <!-- Image -->
                                         <div class="w-28 h-28 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center p-2">
-                                            <img src="{{ $product->primary_image ?? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=400&auto=format&fit=crop' }}"
+                                            <img src="{{ $product->primary_image_url }}"
                                                  alt="{{ $product->title }}"
                                                  class="w-full h-full object-contain">
                                         </div>

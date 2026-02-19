@@ -58,6 +58,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'email_verified_at' => now(),
+            'role' => 'customer',
         ]);
 
         // Assign customer role

@@ -220,15 +220,15 @@
 
                         <!-- CTA Buttons -->
                         <div class="space-y-3">
-                            <button type="submit"
+                            <button type="submit" name="action" value="add_to_cart"
                                     class="btn-ripple w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                                 Add to Cart
                             </button>
-                            <a href="{{ route('checkout.index') }}"
+                            <button type="submit" name="action" value="buy_now"
                                class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
                                 Buy Now
-                            </a>
+                            </button>
 
                             <!-- Wishlist Toggle -->
                             <form action="{{ route('wishlist.toggle', $product) }}" method="POST" class="pt-2">

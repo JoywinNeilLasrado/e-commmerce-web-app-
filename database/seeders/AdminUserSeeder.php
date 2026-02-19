@@ -16,6 +16,7 @@ class AdminUserSeeder extends Seeder
             'email' => 'admin@refurbishedphones.com',
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
+            'role' => 'admin',
         ]);
 
         $admin->assignRole('admin');
@@ -26,6 +27,7 @@ class AdminUserSeeder extends Seeder
             'email' => 'customer@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
+            'role' => 'customer',
         ]);
 
         $customer->assignRole('customer');

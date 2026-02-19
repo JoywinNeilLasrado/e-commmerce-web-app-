@@ -34,6 +34,7 @@ class UserController extends Controller
         }
 
         $user->syncRoles([$validated['role']]);
+        $user->update(['role' => $validated['role']]);
 
         return back()->with('success', 'User role updated successfully.');
     }

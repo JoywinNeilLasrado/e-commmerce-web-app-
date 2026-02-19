@@ -18,7 +18,7 @@
                             <div class="flex gap-5">
                                 <!-- Product Image -->
                                 <div class="w-24 h-24 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex items-center justify-center p-2">
-                                    <img src="{{ $item->productVariant->product->primary_image }}"
+                                    <img src="{{ $item->productVariant->product->primary_image_url }}"
                                          alt="{{ $item->productVariant->product->title }}"
                                          class="w-full h-full object-contain">
                                 </div>

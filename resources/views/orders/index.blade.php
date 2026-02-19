@@ -63,7 +63,7 @@
                             @foreach($order->items as $item)
                                 <div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
                                     <div class="w-14 h-14 flex-shrink-0 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center p-1.5">
-                                        <img src="{{ $item->productVariant?->product?->primary_image ?? asset('images/placeholder.png') }}"
+                                        <img src="{{ $item->productVariant?->product?->primary_image_url ?? asset('images/placeholder.png') }}"
                                              alt="{{ $item->phone_title ?? $item->productVariant?->product?->title }}"
                                              class="w-full h-full object-contain">
                                     </div>
