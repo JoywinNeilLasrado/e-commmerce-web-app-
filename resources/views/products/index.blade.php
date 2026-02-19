@@ -3,14 +3,20 @@
 @section('title', 'All Phones — PhoneShop')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="bg-gray-50 min-h-screen pt-24 pb-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Page Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 fade-in-section">
             <div>
-                <h1 class="text-3xl font-black text-gray-900">All Phones</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ $products->total() }} certified refurbished devices</p>
+                <h1 class="text-3xl font-black text-gray-900">
+                    @if(request('search'))
+                        Results for "{{ request('search') }}"
+                    @else
+                        All Phones
+                    @endif
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">{{ $products->total() }} certified refurbished devices found</p>
             </div>
             <div class="flex items-center gap-3">
                 <label class="text-sm font-medium text-gray-600">Sort by:</label>

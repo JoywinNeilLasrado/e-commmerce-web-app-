@@ -3,7 +3,7 @@
 @section('title', 'Order #' . $order->order_number . ' - Refurbished Phones Shop')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen py-8">
+<div class="bg-gray-50 min-h-screen pt-24 pb-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex justify-between items-center">
             <div>

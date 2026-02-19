@@ -3,7 +3,7 @@
 @section('title', 'Shopping Cart — PhoneShop')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen py-10">
+<div class="bg-gray-50 min-h-screen pt-24 pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <h1 class="text-3xl font-black text-gray-900 mb-8 fade-in-section">Shopping Cart</h1>

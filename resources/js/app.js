@@ -16,39 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ─── 2. Smart Navbar: Hide on scroll down, show on scroll up ───
-    const navbar = document.getElementById('smart-navbar');
-    let lastScrollY = window.scrollY;
-    let ticking = false;
-
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                const currentScrollY = window.scrollY;
-
-                if (currentScrollY > 80) {
-                    if (currentScrollY > lastScrollY) {
-                        // Scrolling down — hide
-                        navbar.style.transform = 'translateY(-100%)';
-                        navbar.style.opacity = '0';
-                    } else {
-                        // Scrolling up — show with shadow
-                        navbar.style.transform = 'translateY(0)';
-                        navbar.style.opacity = '1';
-                        navbar.style.boxShadow = '0 4px 24px rgba(0,0,0,0.06)';
-                    }
-                } else {
-                    // At top — show without shadow
-                    navbar.style.transform = 'translateY(0)';
-                    navbar.style.opacity = '1';
-                    navbar.style.boxShadow = 'none';
-                }
-
-                lastScrollY = currentScrollY;
-                ticking = false;
-            });
-            ticking = true;
-        }
-    });
+    // Logic removed to keep navbar always visible per user request.
 
 
     // ─── 3. Ripple Effect on .btn-ripple ───

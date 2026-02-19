@@ -3,7 +3,7 @@
 @section('title', 'Register - Refurbished Phones Shop')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-20">
     <div class="max-w-md w-full space-y-8">
         <div>
             <h2 class="text-center text-3xl font-bold text-gray-900">

@@ -3,7 +3,7 @@
 @section('title', 'My Orders — PhoneShop')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen py-10">
+<div class="bg-gray-50 min-h-screen pt-24 pb-10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Header -->

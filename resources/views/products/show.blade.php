@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
 
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-2 text-sm text-gray-400 mb-10 fade-in-section">
@@ -163,7 +163,7 @@
 
                         <!-- Price -->
                         <div class="mb-6">
-                            <p class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
+                            <p id="product-price" class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
                             <div class="flex items-center gap-2 mt-2">
                                 <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
                                     <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -180,7 +180,7 @@
                                 <div class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
                                     @foreach($product->variants as $variant)
                                         <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
-                                            <input type="radio" name="variant_id" value="{{ $variant->id }}"
+                                            <input type="radio" name="variant_id" value="{{ $variant->id }}" data-price="{{ $variant->price }}"
                                                    class="sr-only" {{ $loop->first ? 'checked' : '' }}>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-bold text-gray-900">{{ $variant->storage }} · {{ $variant->color }}</p>
@@ -239,5 +239,37 @@ function changeImage(src, btn) {
     btn.classList.remove('border-transparent');
     btn.classList.add('border-blue-500');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const priceDisplay = document.getElementById('product-price');
+    const variantInputs = document.querySelectorAll('input[name="variant_id"]');
+
+    function updatePrice(price) {
+        // Format price with commas
+        const formattedPrice = new Intl.NumberFormat('en-IN').format(price);
+        priceDisplay.textContent = '₹' + formattedPrice;
+        
+        // Add a subtle animation effect
+        priceDisplay.classList.remove('scale-100');
+        priceDisplay.classList.add('scale-105', 'text-blue-600');
+        setTimeout(() => {
+            priceDisplay.classList.remove('scale-105', 'text-blue-600');
+            priceDisplay.classList.add('scale-100');
+        }, 200);
+    }
+
+    variantInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                updatePrice(this.dataset.price);
+            }
+        });
+
+        // Initialize with checked input
+        if (input.checked) {
+            updatePrice(input.dataset.price);
+        }
+    });
+});
 </script>
 @endsection

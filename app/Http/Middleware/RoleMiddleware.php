@@ -8,14 +8,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string $role, ?string $guard = null): Response
     {
-        if (!auth()->check()) {
+        $auth = auth()->guard($guard);
+
+        if (!$auth->check()) {
+            // Redirect based on guard if possible, or default
+            if ($guard === 'admin') {
+                return redirect()->route('admin.login');
+            }
             return redirect('/login');
         }
 
-        if (!auth()->user()->hasRole($role)) {
-            abort(403, 'Unauthorized access.');
+        if (!$auth->user()->hasRole($role, $guard)) {
+             abort(403, 'Unauthorized access.');
         }
 
         return $next($request);

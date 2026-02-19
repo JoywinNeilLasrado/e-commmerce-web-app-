@@ -101,20 +101,56 @@
     </div>
 </section>
 
-<!-- Brand Bar -->
-<section class="border-y border-gray-100 py-10 bg-gray-50/50 fade-in-section">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">Trusted brands we carry</p>
-        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+<!-- Top Selling Brands -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 fade-in-section">
+    <h2 class="text-3xl font-black text-gray-900 mb-10">Top Selling Brands</h2>
+    
+    <div class="relative group">
+        <!-- Scroll Container -->
+        <div class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scroll-smooth hide-scrollbar" id="brands-scroll">
             @foreach($brands as $brand)
-                <a href="{{ route('products.index', ['brand' => $brand->slug]) }}"
-                   class="text-lg font-black text-gray-300 hover:text-gray-700 transition-all duration-300 hover:scale-110">
-                    {{ $brand->name }}
+                <a href="{{ route('products.index', ['brand' => $brand->slug]) }}" 
+                   class="flex-none w-48 h-48 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center p-6 gap-4 snap-start group/card relative overflow-hidden">
+                    
+                    <!-- Hover Effect Background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                    
+                    <div class="relative z-10 flex flex-col items-center gap-4">
+                        @if($brand->logo)
+                            <img src="{{ Str::startsWith($brand->logo, 'http') ? $brand->logo : asset('storage/' . $brand->logo) }}" 
+                                 alt="{{ $brand->name }}" class="h-16 w-auto object-contain transition-transform group-hover/card:scale-110 filter grayscale group-hover/card:grayscale-0 opacity-70 group-hover/card:opacity-100">
+                        @else
+                            <div class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-2xl font-black text-gray-300 group-hover/card:text-blue-600 transition-colors">
+                                {{ substr($brand->name, 0, 1) }}
+                            </div>
+                        @endif
+                        <span class="text-lg font-bold text-gray-500 group-hover/card:text-gray-900 transition-colors">{{ $brand->name }}</span>
+                    </div>
                 </a>
             @endforeach
         </div>
+
+        <!-- Scroll Controls -->
+        <button onclick="document.getElementById('brands-scroll').scrollBy({left: -300, behavior: 'smooth'})" 
+                class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-5 w-12 h-12 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button onclick="document.getElementById('brands-scroll').scrollBy({left: 300, behavior: 'smooth'})" 
+                class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-5 w-12 h-12 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
     </div>
 </section>
+
+<style>
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
 
 <!-- Featured Products -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -180,77 +216,7 @@
     </div>
 </section>
 
-<!-- Sell Your Phone -->
-<section id="sell" class="py-24 bg-white fade-in-section">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden">
-            <div class="grid lg:grid-cols-2 gap-0">
-                <!-- Left: Content -->
-                <div class="p-12 lg:p-16">
-                    <span class="inline-flex items-center gap-2 bg-blue-600/20 text-blue-400 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
-                        <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
-                        Sell &amp; Trade-In
-                    </span>
-                    <h2 class="text-4xl font-black text-white leading-tight mb-6">
-                        Got an old phone?<br>
-                        <span class="text-blue-400">Turn it into cash.</span>
-                    </h2>
-                    <p class="text-gray-400 text-lg leading-relaxed mb-10">
-                        Get the best price for your used smartphone. We offer instant quotes, free pickup, and same-day payment. No hassle, no waiting.
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="mailto:sell@phoneshop.com"
-                           class="btn-ripple inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 shadow-xl shadow-blue-600/30 hover:scale-105 active:scale-95">
-                            Get an Instant Quote
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                        </a>
-                    </div>
-                    <div class="grid grid-cols-3 gap-6 mt-12 pt-10 border-t border-gray-700">
-                        <div>
-                            <p class="text-2xl font-black text-white">Free</p>
-                            <p class="text-sm text-gray-500 mt-1">Pickup</p>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-black text-white">Same</p>
-                            <p class="text-sm text-gray-500 mt-1">Day payment</p>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-black text-white">Best</p>
-                            <p class="text-sm text-gray-500 mt-1">Price guaranteed</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Right: Steps -->
-                <div class="bg-gray-800/50 p-12 lg:p-16 flex flex-col justify-center">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">How it works</p>
-                    <div class="space-y-8">
-                        <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm">1</div>
-                            <div>
-                                <h4 class="text-white font-bold mb-1">Tell us about your phone</h4>
-                                <p class="text-gray-400 text-sm">Share the model, storage, and condition. Takes less than 2 minutes.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm">2</div>
-                            <div>
-                                <h4 class="text-white font-bold mb-1">Get an instant quote</h4>
-                                <p class="text-gray-400 text-sm">We'll give you the best market price — no negotiations needed.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm">3</div>
-                            <div>
-                                <h4 class="text-white font-bold mb-1">Get paid instantly</h4>
-                                <p class="text-gray-400 text-sm">Free pickup from your doorstep and same-day bank transfer.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <!-- CTA Banner -->
 <section class="bg-blue-600 py-20 fade-in-section">

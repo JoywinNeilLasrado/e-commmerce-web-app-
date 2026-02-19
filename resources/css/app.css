@@ -38,9 +38,19 @@
 
     /* ─── Smart Navbar ─── */
     #smart-navbar {
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-            opacity 0.4s ease,
-            box-shadow 0.3s ease;
+        overflow: visible !important;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Use a pseudo-element for backdrop-filter so it doesn't create
+       an overflow clipping context on the nav itself */
+    #smart-navbar::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: -1;
     }
 
     /* ─── Glassmorphism ─── */
