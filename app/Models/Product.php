@@ -21,6 +21,7 @@ class Product extends Model
         'description',
         'primary_image',
         'base_price',
+        'original_price',
         'imei',
         'warranty_months',
         'whats_in_box',
@@ -32,6 +33,7 @@ class Product extends Model
 
     protected $casts = [
         'base_price' => 'decimal:2',
+        'original_price' => 'decimal:2',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'published_at' => 'datetime',
@@ -62,6 +64,17 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function wishlistedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'wishlists');
+    }
+
+    public function inWishlist(): bool
+    {
+        if (!auth()->check()) return false;
+        return $this->wishlists()->where('user_id', auth()->id())->exists();
+    }
+
     // Get available variants only
     public function availableVariants(): HasMany
     {
@@ -78,5 +91,19 @@ class Product extends Model
     public function getAverageRatingAttribute(): float
     {
         return round($this->reviews()->where('is_approved', true)->avg('rating') ?? 0, 1);
+    }
+
+    // Get primary image URL
+    public function getPrimaryImageUrlAttribute(): string
+    {
+        if (!$this->primary_image) {
+            return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800';
+        }
+
+        if (str_starts_with($this->primary_image, 'http')) {
+            return $this->primary_image;
+        }
+
+        return asset('storage/' . $this->primary_image);
     }
 }

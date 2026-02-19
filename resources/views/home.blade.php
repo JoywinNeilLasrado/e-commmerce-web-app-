@@ -116,14 +116,8 @@
                     <div class="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
                     
                     <div class="relative z-10 flex flex-col items-center gap-4">
-                        @if($brand->logo)
-                            <img src="{{ Str::startsWith($brand->logo, 'http') ? $brand->logo : asset('storage/' . $brand->logo) }}" 
+                        <img src="{{ $brand->logo_url }}" 
                                  alt="{{ $brand->name }}" class="h-16 w-auto object-contain transition-transform group-hover/card:scale-110 filter grayscale group-hover/card:grayscale-0 opacity-70 group-hover/card:opacity-100">
-                        @else
-                            <div class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-2xl font-black text-gray-300 group-hover/card:text-blue-600 transition-colors">
-                                {{ substr($brand->name, 0, 1) }}
-                            </div>
-                        @endif
                         <span class="text-lg font-bold text-gray-500 group-hover/card:text-gray-900 transition-colors">{{ $brand->name }}</span>
                     </div>
                 </a>

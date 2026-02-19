@@ -74,6 +74,19 @@
 
                     <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
 
+                    <!-- Wishlist -->
+                    <a href="{{ route('wishlist.index') }}" class="relative group p-2 text-gray-500 hover:text-red-500 transition-colors">
+                        <div class="absolute inset-0 bg-red-50 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200"></div>
+                        <svg class="relative w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        @auth
+                            @if(auth()->user()->wishlists()->count() > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full shadow-sm ring-2 ring-white">
+                                    {{ auth()->user()->wishlists()->count() }}
+                                </span>
+                            @endif
+                        @endauth
+                    </a>
+
                     <!-- Cart -->
                     <a href="{{ route('cart.index') }}" class="relative group p-2 text-gray-500 hover:text-blue-600 transition-colors">
                         <div class="absolute inset-0 bg-blue-50 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200"></div>

@@ -17,8 +17,8 @@ class ProductController extends Controller
 
         // Filter by brand
         if ($request->filled('brand')) {
-            $query->whereHas('phoneModel', function ($q) use ($request) {
-                $q->where('brand_id', $request->brand);
+            $query->whereHas('phoneModel.brand', function ($q) use ($request) {
+                $q->where('slug', $request->brand);
             });
         }
 

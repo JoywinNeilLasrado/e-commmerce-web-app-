@@ -65,9 +65,17 @@
                 <!-- Price & Stock -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="price" class="block text-sm font-medium text-gray-700">Price (₹)</label>
+                        <label for="price" class="block text-sm font-medium text-gray-700">Selling Price (₹)</label>
                         <input type="number" name="price" id="price" value="{{ old('price') }}" required min="0" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
                         @error('price')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="original_price" class="block text-sm font-medium text-gray-700">Original Price (MRP) (₹)</label>
+                        <input type="number" name="original_price" id="original_price" value="{{ old('original_price') }}" min="0" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                        @error('original_price')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

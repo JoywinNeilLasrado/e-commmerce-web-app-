@@ -14,33 +14,42 @@
             <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
 
-                <!-- Brand & Model -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Brand & Model Selection -->
+                <div class="space-y-4">
                     <div>
-                        <label for="brand_id" class="block text-sm font-medium text-gray-700">Brand</label>
-                        <select id="brand_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm rounded-md">
-                            <option value="">Select Brand</option>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">1. Select Brand</label>
+                        <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
                             @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                <button type="button" 
+                                        onclick="selectBrand('{{ $brand->id }}')"
+                                        data-brand-btn="{{ $brand->id }}"
+                                        class="brand-btn relative group aspect-square rounded-2xl border-2 border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 transition-all p-3 flex flex-col items-center justify-center gap-2">
+                                    <div class="w-full h-10 flex items-center justify-center overflow-hidden">
+                                        <img src="{{ $brand->logo_url }}" alt="{{ $brand->name }}" class="max-w-full max-h-full object-contain filter grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100">
+                                    </div>
+                                    <span class="text-[10px] font-bold truncate w-full text-center text-gray-400 group-hover:text-gray-600">{{ $brand->name }}</span>
+                                </button>
                             @endforeach
-                        </select>
+                        </div>
+                        <input type="hidden" name="brand_id" id="hidden_brand_id" value="">
+                        @error('phone_model_id')
+                            <p class="mt-2 text-xs text-red-600 font-bold">Please select a brand and model.</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label for="phone_model_id" class="block text-sm font-medium text-gray-700">Phone Model</label>
-                        <select id="phone_model_id" name="phone_model_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm rounded-md">
-                            <option value="">Select Brand First</option>
+                        <label for="phone_model_id" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">2. Select Phone Model</label>
+                        <select id="phone_model_id" name="phone_model_id" required 
+                                class="block w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm py-3 px-4 font-medium transition-all">
+                            <option value="">Select Brand Above First</option>
                             @foreach($brands as $brand)
                                 <optgroup label="{{ $brand->name }}" data-brand="{{ $brand->id }}" hidden>
                                     @foreach($brand->phoneModels as $model)
-                                        <option value="{{ $model->id }}">{{ $model->name }}</option>
+                                        <option value="{{ $model->id }}" {{ old('phone_model_id') == $model->id ? 'selected' : '' }}>{{ $model->name }}</option>
                                     @endforeach
                                 </optgroup>
                             @endforeach
                         </select>
-                         @error('phone_model_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
                 </div>
 
@@ -79,6 +88,14 @@
                         <label for="base_price" class="block text-sm font-medium text-gray-700">Base Price (₹)</label>
                         <input type="number" name="base_price" id="base_price" value="{{ old('base_price') }}" required min="0" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
                         @error('base_price')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="original_price" class="block text-sm font-medium text-gray-700">Original Price (MRP) (₹)</label>
+                        <input type="number" name="original_price" id="original_price" value="{{ old('original_price') }}" min="0" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                        @error('original_price')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -137,18 +154,44 @@
 </div>
 
 <script>
-    // Simple script to filter models by brand
-    document.getElementById('brand_id').addEventListener('change', function() {
-        const brandId = this.value;
+    function selectBrand(brandId) {
+        // 1. Update Hidden Input
+        document.getElementById('hidden_brand_id').value = brandId;
+
+        // 2. Update UI (active state on buttons)
+        document.querySelectorAll('.brand-btn').forEach(btn => {
+            if (btn.dataset.brandBtn === brandId) {
+                btn.classList.add('border-blue-600', 'bg-blue-50/10', 'shadow-md', 'ring-2', 'ring-blue-600/20');
+                btn.classList.remove('border-gray-100', 'bg-white', 'hover:border-gray-200', 'hover:bg-gray-50');
+                btn.querySelector('img').classList.remove('grayscale', 'opacity-70');
+                btn.querySelector('span').classList.add('text-blue-700');
+                btn.querySelector('span').classList.remove('text-gray-400');
+                
+                // Add Checkmark
+                if (!btn.querySelector('.absolute')) {
+                    const check = document.createElement('div');
+                    check.className = 'absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg z-10';
+                    check.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+                    btn.appendChild(check);
+                }
+            } else {
+                btn.classList.remove('border-blue-600', 'bg-blue-50/10', 'shadow-md', 'ring-2', 'ring-blue-600/20');
+                btn.classList.add('border-gray-100', 'bg-white', 'hover:border-gray-200', 'hover:bg-gray-50');
+                btn.querySelector('img').classList.add('grayscale', 'opacity-70');
+                btn.querySelector('span').classList.remove('text-blue-700');
+                btn.querySelector('span').classList.add('text-gray-400');
+                
+                // Remove Checkmark
+                const check = btn.querySelector('.absolute');
+                if (check) check.remove();
+            }
+        });
+
+        // 3. Filter Models
         const modelSelect = document.getElementById('phone_model_id');
         const optgroups = modelSelect.querySelectorAll('optgroup');
         
         modelSelect.value = ''; // Reset selection
-
-        if (!brandId) {
-            optgroups.forEach(group => group.hidden = true);
-            return;
-        }
 
         optgroups.forEach(group => {
             if (group.dataset.brand === brandId) {
@@ -157,6 +200,11 @@
                 group.hidden = true;
             }
         });
-    });
+    }
+
+    // Auto-select brand if old input exists (e.g. after validation error)
+    @if(old('brand_id'))
+        window.addEventListener('load', () => selectBrand('{{ old('brand_id') }}'));
+    @endif
 </script>
 @endsection

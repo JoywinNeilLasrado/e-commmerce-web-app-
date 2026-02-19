@@ -36,6 +36,10 @@
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.products.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Products
                         </a>
+                        <a href="{{ route('admin.brands.index') }}" 
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.brands.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                            Brands
+                        </a>
                         <a href="{{ route('admin.orders.index') }}" 
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.orders.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Orders

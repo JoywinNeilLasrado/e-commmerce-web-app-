@@ -28,6 +28,9 @@
             @csrf
             @method('PUT')
             
+            <!-- Cumulative Multi-selection inputs storage -->
+            <div id="hidden-inputs-container" class="hidden"></div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 <!-- Left Column: Identity (col-span-4) -->
@@ -41,20 +44,35 @@
                                        class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 shadow-sm py-1.5">
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Brand</label>
-                                    <select id="brand_id" class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 shadow-sm py-1.5">
-                                        <option value="">Select</option>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Select Brand</label>
+                                    <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
                                         @foreach($brands as $brand)
-                                            <option value="{{ $brand->id }}" {{ $product->phoneModel->brand_id == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                            <button type="button" 
+                                                    onclick="selectBrand('{{ $brand->id }}')"
+                                                    data-brand-btn="{{ $brand->id }}"
+                                                    class="brand-btn relative group aspect-square rounded-xl border-2 transition-all p-2 flex flex-col items-center justify-center gap-1 {{ $product->phoneModel->brand_id == $brand->id ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50' }}">
+                                                <div class="w-full h-8 flex items-center justify-center overflow-hidden">
+                                                    <img src="{{ $brand->logo_url }}" alt="{{ $brand->name }}" class="max-w-full max-h-full object-contain filter {{ $product->phoneModel->brand_id == $brand->id ? '' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100' }}">
+                                                </div>
+                                                <span class="text-[10px] font-bold truncate w-full text-center {{ $product->phoneModel->brand_id == $brand->id ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-600' }}">{{ $brand->name }}</span>
+                                                
+                                                @if($product->phoneModel->brand_id == $brand->id)
+                                                    <div class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                                        <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    </div>
+                                                @endif
+                                            </button>
                                         @endforeach
-                                    </select>
+                                    </div>
+                                    <input type="hidden" name="brand_id" id="hidden_brand_id" value="{{ $product->phoneModel->brand_id }}">
                                 </div>
+
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Model</label>
-                                    <select id="phone_model_id" name="phone_model_id" required class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 shadow-sm py-1.5">
-                                        <option value="">Select Brand</option>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Phone Model</label>
+                                    <select id="phone_model_id" name="phone_model_id" required class="block w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5 font-medium">
+                                        <option value="">Select Brand First</option>
                                         @foreach($brands as $brand)
                                             <optgroup label="{{ $brand->name }}" data-brand="{{ $brand->id }}" {{ $product->phoneModel->brand_id == $brand->id ? '' : 'hidden' }}>
                                                 @foreach($brand->phoneModels as $model)
@@ -72,6 +90,15 @@
                                     <span class="absolute left-3 top-1.5 text-gray-400 text-sm">₹</span>
                                     <input type="number" name="base_price" value="{{ old('base_price', $product->base_price) }}" required min="0" step="0.01"
                                            class="block w-full rounded-md border-gray-300 pl-7 text-sm font-bold text-gray-900 focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Original Price (MRP)</label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <span class="absolute left-3 top-1.5 text-gray-400 text-sm">₹</span>
+                                    <input type="number" name="original_price" value="{{ old('original_price', $product->original_price) }}" min="0" step="0.01"
+                                           class="block w-full rounded-md border-gray-300 pl-7 text-sm text-gray-500 focus:ring-gray-900 focus:border-gray-900 py-1.5">
                                 </div>
                             </div>
 
@@ -95,35 +122,43 @@
                         <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Visuals</h2>
                         
                         <!-- Main Preview -->
-                        <div class="h-48 w-full bg-gray-50 rounded-lg border border-gray-200 relative group overflow-hidden mb-4 flex items-center justify-center">
-                            @if($product->primary_image)
-                                <img src="{{ Str::startsWith($product->primary_image, 'http') ? $product->primary_image : asset('storage/' . $product->primary_image) }}" class="max-w-full max-h-full object-contain p-2">
-                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-200 flex justify-center">
-                                    <span class="text-white text-xs font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">Change Primary</span>
-                                </div>
-                            @else
-                                <div class="text-gray-400 flex flex-col items-center">
-                                    <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    <span class="text-xs font-medium">Upload Image</span>
-                                </div>
-                            @endif
-                            <input type="file" name="primary_image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <div class="h-48 w-full bg-gray-50 rounded-lg border border-gray-200 relative group overflow-hidden mb-4 flex items-center justify-center cursor-pointer">
+                            <img src="{{ $product->primary_image_url }}" 
+                                 class="max-w-full max-h-full object-contain p-2 pointer-events-none">
+                            
+                            <!-- Hover overlay -->
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center pointer-events-none">
+                                <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-2.828 1.172H7v-2a4 4 0 011.172-2.828z"/></svg>
+                                    Click to Change
+                                </span>
+                            </div>
+                            
+                            <!-- File input ON TOP (z-10) to ensure its clickable -->
+                            <input type="file" name="primary_image" accept="image/*" 
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                   onchange="previewPrimaryImage(this)">
                         </div>
 
                         <!-- Gallery Thumbnails -->
-                        <div class="grid grid-cols-4 gap-2">
+                        <div id="gallery-grid" class="grid grid-cols-4 gap-2">
                              @foreach($product->images as $img)
                                 <div class="relative group aspect-square rounded border border-gray-200 overflow-hidden bg-gray-50">
-                                    <img src="{{ Str::startsWith($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover">
+                                    <img src="{{ $img->url }}" class="w-full h-full object-cover">
                                     <button type="button" onclick="deleteImage('{{ route('admin.product-images.destroy', $img->id) }}')" 
                                             class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow-md transition-all hover:scale-110" title="Delete Image">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     </button>
                                 </div>
                             @endforeach
-                            <div class="relative aspect-square rounded border border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center justify-center cursor-pointer group bg-gray-50/50">
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                <input type="file" name="product_images[]" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <!-- This will hold previews for all newly selected images -->
+                            <div id="new-previews" class="contents"></div>
+
+                            <div id="gallery-input-wrapper" class="relative aspect-square rounded border border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center justify-center cursor-pointer group bg-gray-50/50">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                <input type="file" name="product_images[]" multiple accept="image/*" 
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                       onchange="previewGalleryImages(this)">
                             </div>
                         </div>
                     </div>
@@ -173,6 +208,61 @@
 </form>
 
 <script>
+    // Live preview when a new primary image is selected
+    function previewPrimaryImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const container = input.closest('div');
+                const img = container.querySelector('img');
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Live preview for multiple gallery images (Cumulative)
+    function previewGalleryImages(input) {
+        const previewContainer = document.getElementById('new-previews');
+        const hiddenContainer = document.getElementById('hidden-inputs-container');
+        const wrapper = document.getElementById('gallery-input-wrapper');
+        
+        if (input.files && input.files.length > 0) {
+            // 1. Render Previews for these files
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'relative aspect-square rounded border border-gray-200 overflow-hidden bg-gray-50 animate-pulse';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
+                            <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">NEW</span>
+                        </div>
+                    `;
+                    previewContainer.appendChild(div);
+                    setTimeout(() => div.classList.remove('animate-pulse'), 500);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 2. Move this input to hidden container (so it stays in form)
+            input.onchange = null; // Prevent recursion
+            input.classList.add('hidden');
+            hiddenContainer.appendChild(input);
+
+            // 3. Create a fresh input for the next selection
+            const nextInput = document.createElement('input');
+            nextInput.type = 'file';
+            nextInput.name = 'product_images[]';
+            nextInput.multiple = true;
+            nextInput.accept = 'image/*';
+            nextInput.className = 'absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10';
+            nextInput.onchange = function() { previewGalleryImages(this); };
+            wrapper.appendChild(nextInput);
+        }
+    }
+
     function deleteImage(url) {
         if (confirm('Delete this image?')) {
             const form = document.getElementById('delete-image-form');
@@ -181,20 +271,44 @@
         }
     }
 
-    document.getElementById('brand_id').addEventListener('change', function() {
-        const brandId = this.value;
+    function selectBrand(brandId) {
+        // 1. Update Hidden Input
+        document.getElementById('hidden_brand_id').value = brandId;
+
+        // 2. Update UI (active state on buttons)
+        document.querySelectorAll('.brand-btn').forEach(btn => {
+            if (btn.dataset.brandBtn === brandId) {
+                btn.classList.add('border-blue-600', 'bg-blue-50/50', 'shadow-sm');
+                btn.classList.remove('border-gray-100', 'bg-white', 'hover:border-gray-200', 'hover:bg-gray-50');
+                btn.querySelector('img').classList.remove('grayscale', 'opacity-70');
+                btn.querySelector('span').classList.add('text-blue-700');
+                btn.querySelector('span').classList.remove('text-gray-400');
+                
+                // Add Checkmark if not already there
+                if (!btn.querySelector('.absolute')) {
+                    const check = document.createElement('div');
+                    check.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-sm';
+                    check.innerHTML = '<svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+                    btn.appendChild(check);
+                }
+            } else {
+                btn.classList.remove('border-blue-600', 'bg-blue-50/50', 'shadow-sm');
+                btn.classList.add('border-gray-100', 'bg-white', 'hover:border-gray-200', 'hover:bg-gray-50');
+                btn.querySelector('img').classList.add('grayscale', 'opacity-70');
+                btn.querySelector('span').classList.remove('text-blue-700');
+                btn.querySelector('span').classList.add('text-gray-400');
+                
+                // Remove Checkmark
+                const check = btn.querySelector('.absolute');
+                if (check) check.remove();
+            }
+        });
+
+        // 3. Filter Models
         const modelSelect = document.getElementById('phone_model_id');
         const optgroups = modelSelect.querySelectorAll('optgroup');
         
-        if (this.dataset.userInteraction) {
-            modelSelect.value = '';
-        }
-        this.dataset.userInteraction = 'true';
-
-        if (!brandId) {
-            optgroups.forEach(group => group.hidden = true);
-            return;
-        }
+        modelSelect.value = ''; // Reset selection
 
         optgroups.forEach(group => {
             if (group.dataset.brand === brandId) {
@@ -203,11 +317,6 @@
                 group.hidden = true;
             }
         });
-        
-        const selectedOption = modelSelect.options[modelSelect.selectedIndex];
-        if (selectedOption && selectedOption.parentElement.hidden) {
-             modelSelect.value = '';
-        }
-    });
+    }
 </script>
 @endsection

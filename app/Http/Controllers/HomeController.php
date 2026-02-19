@@ -17,7 +17,9 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        $brands = Brand::where('is_active', true)->get();
+        $brands = Brand::where('is_active', true)
+            ->where('is_featured', true)
+            ->get();
 
         return view('home', compact('featuredProducts', 'brands'));
     }

@@ -38,8 +38,13 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $product->phoneModel->brand->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $product->phoneModel->name }}</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-gray-50 border border-gray-100 flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
+                                        <img src="{{ $product->phoneModel->brand->logo_url }}" alt="{{ $product->phoneModel->brand->name }}" class="max-w-full max-h-full object-contain">
+                                    </div>
+                                    <div class="text-sm text-gray-900 font-medium">{{ $product->phoneModel->brand->name }}</div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-0.5 ml-11">{{ $product->phoneModel->name }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 ₹{{ number_format($product->base_price, 0) }}

@@ -29,9 +29,41 @@ class OrderController extends Controller
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
         ]);
 
-        $order->update(['status' => $validated['status']]);
+        $updateData = ['status' => $validated['status']];
+
+        // Automatic timestamps based on status
+        if ($validated['status'] === 'shipped' && !$order->shipped_at) {
+            $updateData['shipped_at'] = now();
+        } elseif ($validated['status'] === 'delivered' && !$order->delivered_at) {
+            $updateData['delivered_at'] = now();
+        }
+
+        $order->update($updateData);
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order status updated successfully.');
+    }
+
+    public function simulatePayment(Order $order)
+    {
+        // 1. Update Payment record
+        $payment = $order->payment;
+        if ($payment) {
+            $payment->update([
+                'status' => 'completed',
+                'paid_at' => now(),
+                'transaction_id' => 'SIM-' . strtoupper(uniqid())
+            ]);
+        }
+
+        // 2. Update Order record
+        $order->update([
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+            'status' => 'processing' // Auto-advance to processing on payment
+        ]);
+
+        return redirect()->route('admin.orders.show', $order)
+            ->with('success', 'Payment simulated successfully! Order is now marked as Paid.');
     }
 }

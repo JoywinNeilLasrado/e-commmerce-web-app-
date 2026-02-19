@@ -18,8 +18,8 @@
                             <div class="flex gap-5">
                                 <!-- Product Image -->
                                 <div class="w-24 h-24 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex items-center justify-center p-2">
-                                    <img src="{{ $item->variant->product->primary_image }}"
-                                         alt="{{ $item->variant->product->title }}"
+                                    <img src="{{ $item->productVariant->product->primary_image }}"
+                                         alt="{{ $item->productVariant->product->title }}"
                                          class="w-full h-full object-contain">
                                 </div>
 
@@ -28,14 +28,14 @@
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
                                             <h3 class="font-bold text-gray-900 text-sm leading-snug">
-                                                <a href="{{ route('products.show', $item->variant->product) }}" class="hover:text-blue-600 transition-colors">
-                                                    {{ $item->variant->product->title }}
+                                                <a href="{{ route('products.show', $item->productVariant->product) }}" class="hover:text-blue-600 transition-colors">
+                                                    {{ $item->productVariant->product->title }}
                                                 </a>
                                             </h3>
                                             <div class="flex flex-wrap gap-2 mt-2">
-                                                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{{ $item->variant->storage }}</span>
-                                                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{{ $item->variant->color }}</span>
-                                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">{{ $item->variant->condition->name }}</span>
+                                                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{{ $item->productVariant->storage }}</span>
+                                                <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{{ $item->productVariant->color }}</span>
+                                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">{{ $item->productVariant->condition->name }}</span>
                                             </div>
                                         </div>
                                         <p class="text-lg font-black text-gray-900 flex-shrink-0">₹{{ number_format($item->price * $item->quantity, 0) }}</p>
@@ -85,7 +85,7 @@
                         <div class="space-y-4 mb-6">
                             @foreach($cart->items as $item)
                                 <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600 truncate flex-1 mr-4">{{ $item->variant->product->title }} <span class="text-gray-400">×{{ $item->quantity }}</span></span>
+                                    <span class="text-gray-600 truncate flex-1 mr-4">{{ $item->productVariant->product->title }} <span class="text-gray-400">×{{ $item->quantity }}</span></span>
                                     <span class="font-semibold text-gray-900 flex-shrink-0">₹{{ number_format($item->price * $item->quantity, 0) }}</span>
                                 </div>
                             @endforeach

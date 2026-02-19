@@ -22,4 +22,13 @@ class ProductImage extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getUrlAttribute(): string
+    {
+        if (str_starts_with($this->image_path, 'http')) {
+            return $this->image_path;
+        }
+
+        return asset('storage/' . $this->image_path);
+    }
 }

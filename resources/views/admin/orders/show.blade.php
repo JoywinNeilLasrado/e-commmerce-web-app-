@@ -131,6 +131,19 @@
                             <span class="text-gray-900 font-medium text-xs">{{ $order->payment->transaction_id ?? '-' }}</span>
                         </div>
                     </div>
+
+                    @if(!$order->payment || $order->payment->status !== 'completed')
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <form action="{{ route('admin.orders.simulate-payment', $order) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full bg-emerald-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/20">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Simulate Payment Received
+                                </button>
+                            </form>
+                            <p class="text-[10px] text-gray-400 mt-2 text-center">This will mark the order as paid and move it to processing.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

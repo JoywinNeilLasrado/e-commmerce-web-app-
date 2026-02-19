@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,15 +46,21 @@ Route::middleware('auth')->group(function () {
     // Order routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
 // Admin Dashboard Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
+    Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class);
     Route::delete('product-images/{productImage}', [\App\Http\Controllers\Admin\ProductController::class, 'destroyImage'])->name('product-images.destroy');
     Route::resource('products.variants', \App\Http\Controllers\Admin\ProductVariantController::class)->except(['show']);
     Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class)->only(['index', 'show', 'update']);
+    Route::post('orders/{order}/simulate-payment', [\App\Http\Controllers\Admin\OrderController::class, 'simulatePayment'])->name('orders.simulate-payment');
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
 });

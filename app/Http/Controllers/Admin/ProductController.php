@@ -34,6 +34,7 @@ class ProductController extends Controller
             'phone_model_id' => 'required|exists:phone_models,id',
             'title' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
+            'original_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'warranty_months' => 'required|integer|min:0',
             'whats_in_box' => 'nullable|string',
@@ -43,9 +44,9 @@ class ProductController extends Controller
             'product_images.*' => 'nullable|image|max:2048',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']);
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
+        $validated['slug'] = $this->generateUniqueSlug($validated['title']);
 
         // Handle Primary Image
         if ($request->hasFile('primary_image')) {
@@ -82,22 +83,30 @@ class ProductController extends Controller
             'phone_model_id' => 'required|exists:phone_models,id',
             'title' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
+            'original_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'warranty_months' => 'required|integer|min:0',
             'whats_in_box' => 'nullable|string',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
-            'primary_image' => 'nullable|image|max:2048', // Max 2MB
-            'product_images.*' => 'nullable|image|max:2048',
+            'primary_image' => 'nullable|image|max:20480', // Max 20MB
+            'product_images.*' => 'nullable|image|max:20480',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']);
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
 
+        // Only update slug if title changed, to preserve existing links
+        if ($product->title !== $validated['title']) {
+            $validated['slug'] = $this->generateUniqueSlug($validated['title'], $product->id);
+        }
+
+        // Remove images from $validated so they don't overwrite as NULL if no file is uploaded
+        unset($validated['primary_image'], $validated['product_images']);
+
         // Handle Primary Image
         if ($request->hasFile('primary_image')) {
-            // Delete old image if it's not a URL
+            // Delete old image if it's a local file (not an external URL)
             if ($product->primary_image && !Str::startsWith($product->primary_image, 'http')) {
                 Storage::disk('public')->delete($product->primary_image);
             }
@@ -109,7 +118,19 @@ class ProductController extends Controller
 
         // Handle Gallery Images (Append)
         if ($request->hasFile('product_images')) {
-            foreach ($request->file('product_images') as $index => $image) {
+            $allImages = $request->file('product_images');
+            $filesToProcess = [];
+            
+            // Flatten the array in case multiple inputs were used (multi-selection fix)
+            foreach ($allImages as $item) {
+                if (is_array($item)) {
+                    $filesToProcess = array_merge($filesToProcess, $item);
+                } elseif ($item) {
+                    $filesToProcess[] = $item;
+                }
+            }
+
+            foreach ($filesToProcess as $index => $image) {
                 $path = $image->store('products', 'public');
                 ProductImage::create([
                     'product_id' => $product->id,
@@ -138,5 +159,22 @@ class ProductController extends Controller
         $productImage->delete();
 
         return back()->with('success', 'Image deleted successfully.');
+    }
+
+    private function generateUniqueSlug($title, $ignoreId = null)
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (Product::where('slug', $slug)
+            ->when($ignoreId, function ($query, $id) {
+                return $query->where('id', '!=', $id);
+            })
+            ->exists()) {
+            $slug = $originalSlug . '-' . $count++;
+        }
+
+        return $slug;
     }
 }

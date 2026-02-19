@@ -23,9 +23,19 @@
                     <!-- Main Image -->
                     <div class="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl overflow-hidden aspect-square mb-4 group">
                         <img id="mainImage"
-                             src="{{ $product->primary_image ?? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800' }}"
+                             src="{{ $product->primary_image_url }}"
                              alt="{{ $product->title }}"
                              class="w-full h-full object-contain p-10 transition-all duration-500 group-hover:scale-105">
+
+                        <!-- Navigation Arrows -->
+                        <div class="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="prevImage()" class="p-2.5 rounded-full bg-white/90 backdrop-blur-md shadow-lg border border-gray-100 text-gray-900 hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 active:scale-95">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <button onclick="nextImage()" class="p-2.5 rounded-full bg-white/90 backdrop-blur-md shadow-lg border border-gray-100 text-gray-900 hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 active:scale-95">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
 
                         @php $condition = $product->variants->first()?->condition?->name ?? 'Refurbished'; @endphp
                         <div class="absolute top-5 left-5">
@@ -47,14 +57,14 @@
                     <!-- Thumbnails -->
                     @if($product->images->count() > 0)
                         <div class="grid grid-cols-5 gap-2">
-                            <button onclick="changeImage('{{ $product->primary_image }}', this)"
-                                    class="aspect-square rounded-xl overflow-hidden border-2 border-blue-500 bg-gray-50 p-1.5 transition-all">
-                                <img src="{{ $product->primary_image }}" class="w-full h-full object-contain">
+                            <button onclick="changeImage('{{ $product->primary_image_url }}', this)"
+                                    class="thumbnail-btn aspect-square rounded-xl overflow-hidden border-2 border-blue-500 bg-gray-50 p-1.5 transition-all">
+                                <img src="{{ $product->primary_image_url }}" class="w-full h-full object-contain">
                             </button>
                             @foreach($product->images->take(4) as $image)
-                                <button onclick="changeImage('{{ $image->image_path }}', this)"
-                                        class="aspect-square rounded-xl overflow-hidden border-2 border-transparent bg-gray-50 p-1.5 hover:border-blue-300 transition-all">
-                                    <img src="{{ $image->image_path }}" class="w-full h-full object-contain">
+                                <button onclick="changeImage('{{ $image->url }}', this)"
+                                        class="thumbnail-btn aspect-square rounded-xl overflow-hidden border-2 border-transparent bg-gray-50 p-1.5 hover:border-blue-300 transition-all">
+                                    <img src="{{ $image->url }}" class="w-full h-full object-contain">
                                 </button>
                             @endforeach
                         </div>
@@ -163,7 +173,10 @@
 
                         <!-- Price -->
                         <div class="mb-6">
-                            <p id="product-price" class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
+                            <div class="flex items-baseline gap-3">
+                                <p id="product-price" class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
+                                <p id="product-original-price" class="text-lg text-gray-400 line-through {{ $product->original_price ? '' : 'hidden' }}">₹{{ number_format($product->original_price, 0) }}</p>
+                            </div>
                             <div class="flex items-center gap-2 mt-2">
                                 <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
                                     <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -180,7 +193,9 @@
                                 <div class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
                                     @foreach($product->variants as $variant)
                                         <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
-                                            <input type="radio" name="variant_id" value="{{ $variant->id }}" data-price="{{ $variant->price }}"
+                                            <input type="radio" name="variant_id" value="{{ $variant->id }}" 
+                                                   data-price="{{ $variant->price }}" 
+                                                   data-original-price="{{ $variant->original_price ?? '' }}"
                                                    class="sr-only" {{ $loop->first ? 'checked' : '' }}>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-bold text-gray-900">{{ $variant->storage }} · {{ $variant->color }}</p>
@@ -214,6 +229,19 @@
                                class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
                                 Buy Now
                             </a>
+
+                            <!-- Wishlist Toggle -->
+                            <form action="{{ route('wishlist.toggle', $product) }}" method="POST" class="pt-2">
+                                @csrf
+                                <button type="submit"
+                                        class="w-full bg-white border border-gray-100 hover:border-red-100 hover:bg-red-50 text-gray-700 font-bold py-3.5 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 group/wishlist">
+                                    <svg class="w-5 h-5 {{ $product->inWishlist() ? 'text-red-500 fill-current' : 'text-gray-400 group-hover/wishlist:text-red-500' }}"
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                    </svg>
+                                    {{ $product->inWishlist() ? 'In Wishlist' : 'Save to Wishlist' }}
+                                </button>
+                            </form>
                         </div>
                     </form>
                 </div>
@@ -223,31 +251,82 @@
 </div>
 
 <script>
-function changeImage(src, btn) {
+// Image Gallery Logic
+const galleryImages = [
+    "{{ $product->primary_image_url }}",
+    @foreach($product->images as $image)
+        "{{ $image->url }}",
+    @endforeach
+];
+let currentImageIndex = 0;
+
+function updateMainImage() {
     const mainImg = document.getElementById('mainImage');
+    const thumbnails = document.querySelectorAll('.thumbnail-btn');
+    
+    // Animation
     mainImg.style.opacity = '0';
     mainImg.style.transform = 'scale(0.95)';
+    
     setTimeout(() => {
-        mainImg.src = src;
+        mainImg.src = galleryImages[currentImageIndex];
         mainImg.style.opacity = '1';
         mainImg.style.transform = 'scale(1)';
+        
+        // Update thumbnails UI
+        thumbnails.forEach((btn, index) => {
+            if (index === currentImageIndex) {
+                btn.classList.add('border-blue-500');
+                btn.classList.remove('border-transparent');
+            } else {
+                btn.classList.remove('border-blue-500');
+                btn.classList.add('border-transparent');
+            }
+        });
     }, 200);
-    btn.parentElement.querySelectorAll('button').forEach(b => {
-        b.classList.remove('border-blue-500');
-        b.classList.add('border-transparent');
-    });
-    btn.classList.remove('border-transparent');
-    btn.classList.add('border-blue-500');
+}
+
+function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    updateMainImage();
+}
+
+function prevImage() {
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    updateMainImage();
+}
+
+function changeImage(src, btn) {
+    const index = galleryImages.indexOf(src);
+    if (index !== -1) {
+        currentImageIndex = index;
+        updateMainImage();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     const priceDisplay = document.getElementById('product-price');
+    const originalPriceDisplay = document.getElementById('product-original-price');
     const variantInputs = document.querySelectorAll('input[name="variant_id"]');
+    const baseOriginalPrice = "{{ $product->original_price }}";
 
-    function updatePrice(price) {
-        // Format price with commas
+    function updatePrice(price, originalPrice) {
+        // Format prices with commas
         const formattedPrice = new Intl.NumberFormat('en-IN').format(price);
         priceDisplay.textContent = '₹' + formattedPrice;
+        
+        if (originalPrice && parseFloat(originalPrice) > parseFloat(price)) {
+            const formattedOriginal = new Intl.NumberFormat('en-IN').format(originalPrice);
+            originalPriceDisplay.textContent = '₹' + formattedOriginal;
+            originalPriceDisplay.classList.remove('hidden');
+        } else if (!originalPrice && baseOriginalPrice && parseFloat(baseOriginalPrice) > parseFloat(price)) {
+            // Fallback to base product original price if variant doesn't have one but base does
+            const formattedOriginal = new Intl.NumberFormat('en-IN').format(baseOriginalPrice);
+            originalPriceDisplay.textContent = '₹' + formattedOriginal;
+            originalPriceDisplay.classList.remove('hidden');
+        } else {
+            originalPriceDisplay.classList.add('hidden');
+        }
         
         // Add a subtle animation effect
         priceDisplay.classList.remove('scale-100');
@@ -261,13 +340,13 @@ document.addEventListener('DOMContentLoaded', function() {
     variantInputs.forEach(input => {
         input.addEventListener('change', function() {
             if (this.checked) {
-                updatePrice(this.dataset.price);
+                updatePrice(this.dataset.price, this.dataset.originalPrice);
             }
         });
 
         // Initialize with checked input
         if (input.checked) {
-            updatePrice(input.dataset.price);
+            updatePrice(input.dataset.price, input.dataset.originalPrice);
         }
     });
 });
