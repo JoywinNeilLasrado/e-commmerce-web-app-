@@ -34,7 +34,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'address_id' => 'required|exists:addresses,id',
-            'payment_method' => 'required|in:card,upi,cod',
+            'payment_method' => 'required|in:cod,payu',
         ]);
 
         $user = Auth::user();
@@ -81,12 +81,38 @@ class CheckoutController extends Controller
                 // Decrease stock
                 $item->productVariant->decrement('stock', $item->quantity);
             }
+            // Payment Processing
 
-            // Simulated Payment
+            if ($request->payment_method === 'payu') {
+                $order->update(['status' => 'pending']); // Ensure status is pending
+                DB::commit(); // Commit transaction before redirecting
+
+                // PayU Configuration
+                $key = config('services.payu.key');
+                $salt = config('services.payu.salt');
+                $txnid = $order->order_number; // Use Order Number as Transaction ID
+                $amount = $order->total;
+                $productinfo = 'Order #' . $order->order_number;
+                $firstname = $user->name;
+                $email = $user->email;
+                $phone = $order->address->phone ?? '9999999999';
+                $surl = route('payment.payu.response');
+                $furl = route('payment.payu.response');
+                
+                // Hash Sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|...|udf10|salt
+                $hashSequence = "$key|$txnid|$amount|$productinfo|$firstname|$email|||||||||||$salt";
+                $hash = strtolower(hash('sha512', $hashSequence));
+
+                $payuUrl = config('services.payu.test_mode') ? 'https://test.payu.in/_payment' : 'https://secure.payu.in/_payment';
+
+                return view('payment.payu_redirect', compact('key', 'txnid', 'amount', 'productinfo', 'firstname', 'email', 'phone', 'surl', 'furl', 'hash', 'payuUrl'));
+            }
+
             $paymentStatus = $request->payment_method === 'cod' ? 'pending' : 'completed';
+            
             Payment::create([
                 'order_id' => $order->id,
-                'transaction_id' => 'TXN-' . strtoupper(uniqid()) . '-SIM',
+                'transaction_id' => 'TXN-' . strtoupper(uniqid()) . '-COD',
                 'amount' => $cart->total,
                 'payment_method' => $request->payment_method,
                 'status' => $paymentStatus,
@@ -110,8 +136,69 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            dd(explode('(SQL:', $e->getMessage())[0]);
+            // dd(explode('(SQL:', $e->getMessage())[0]); // Debugging
             return back()->with('error', 'Failed to place order. Please try again. ' . $e->getMessage());
+        }
+    }
+
+    public function payuResponse(Request $request)
+    {
+        $key = config('services.payu.key');
+        $salt = config('services.payu.salt');
+        
+        $status = $request->status;
+        $firstname = $request->firstname;
+        $amount = $request->amount;
+        $txnid = $request->txnid;
+        $posted_hash = $request->hash;
+        $productinfo = $request->productinfo;
+        $email = $request->email;
+        
+        // Response Hash Sequence: salt|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
+        $retHashSeq = "$salt|$status|||||||||||$email|$firstname|$productinfo|$amount|$txnid|$key";
+        $hash = strtolower(hash('sha512', $retHashSeq));
+        
+        $order = Order::where('order_number', $txnid)->first();
+        if (!$order) {
+            return redirect()->route('cart.index')->with('error', 'Order not found.');
+        }
+
+        if ($hash != $posted_hash) {
+            return redirect()->route('orders.show', $order)->with('error', 'Invalid Transaction. Please try again.');
+        }
+
+        if ($status == 'success') {
+            
+            Payment::create([
+                'order_id' => $order->id,
+                'transaction_id' => $request->mihpayid ?? $txnid,
+                'amount' => $amount,
+                'payment_method' => 'payu',
+                'status' => 'completed',
+                'paid_at' => now(),
+            ]);
+
+            $order->update([
+                'status' => 'processing',
+                'payment_status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            // Clear Cart
+            Cart::where('user_id', $order->user_id)->first()->items()->delete();
+
+            return redirect()->route('orders.show', $order)->with('success', 'Payment successful! Your order has been placed.');
+        } else {
+            // Payment Failed
+             Payment::create([
+                'order_id' => $order->id,
+                'transaction_id' => $request->mihpayid ?? $txnid,
+                'amount' => $amount,
+                'payment_method' => 'payu',
+                'status' => 'failed',
+            ]);
+            
+            return redirect()->route('orders.show', $order)->with('error', 'Payment failed. Please try again.');
         }
     }
 }

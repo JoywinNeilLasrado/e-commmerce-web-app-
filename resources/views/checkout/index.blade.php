@@ -99,7 +99,7 @@
                         </div>
 
                         <div class="space-y-3">
-                            @foreach([['card', 'Credit / Debit Card', '💳', 'Simulated'], ['upi', 'UPI Payment', '📱', 'Simulated'], ['cod', 'Cash on Delivery', '💵', 'No extra charge']] as [$value, $label, $icon, $note])
+                            @foreach([['payu', 'PayU Money', '💸', 'Secure Payment'], ['cod', 'Cash on Delivery', '💵', 'No extra charge']] as [$value, $label, $icon, $note])
                                 <label class="relative cursor-pointer">
                                     <input type="radio" name="payment_method" value="{{ $value }}"
                                            class="sr-only peer" {{ $value === 'card' ? 'checked' : '' }}>

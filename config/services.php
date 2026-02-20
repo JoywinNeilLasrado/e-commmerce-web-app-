@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'payu' => [
+        'key' => env('PAYU_MERCHANT_KEY'),
+        'salt' => env('PAYU_MERCHANT_SALT'),
+        'test_mode' => env('PAYU_TEST_MODE', true),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

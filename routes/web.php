@@ -42,7 +42,11 @@ Route::middleware('auth')->group(function () {
 
     // Address routes
     Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
-
+    
+    // PayU Routes
+    Route::post('/payment/payu/initiate', [CheckoutController::class, 'payuInitiate'])->name('payment.payu.initiate');
+    Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'])->name('payment.payu.response');
+    
     // Order routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
