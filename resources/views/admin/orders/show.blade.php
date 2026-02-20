@@ -139,38 +139,68 @@
                             <div class="pt-3 mt-3 border-t border-gray-100 space-y-2">
                                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">PayU Details</p>
                                 
-                                @if(isset($order->payment->payment_details['mode']))
+                                @php
+                                    $details = $order->payment->payment_details;
+                                    $isCard = in_array(strtoupper($details['mode'] ?? ''), ['CC', 'DC']);
+                                    
+                                    // ULTRA-GREEDY brand search
+                                    $allStrings = strtoupper(implode(' ', array_filter(array_values($details ?? []))));
+                                    
+                                    $brand = 'Unknown';
+                                    if (str_contains($allStrings, 'VISA')) $brand = 'VISA';
+                                    elseif (str_contains($allStrings, 'MAST') || str_contains($allStrings, 'MASTER')) $brand = 'MASTERCARD';
+                                    elseif (str_contains($allStrings, 'RUPAY')) $brand = 'RUPAY';
+                                    elseif (str_contains($allStrings, 'AMEX') || str_contains($allStrings, 'AMERICAN')) $brand = 'AMEX';
+                                    elseif (str_contains($allStrings, 'DINER')) $brand = 'DINERS';
+                                    elseif (str_contains($allStrings, 'MAES')) $brand = 'MAESTRO';
+                                    else {
+                                        // BIN Detection (e.g. 4xxxxx = VISA, 5xxxxx = Mastercard)
+                                        foreach($details as $k => $v) {
+                                            if (is_string($v) && preg_match('/^[0-9]{6,16}/', $v)) {
+                                                if (str_starts_with($v, '4')) { $brand = 'VISA'; break; }
+                                                if (preg_match('/^5[1-5]/', $v)) { $brand = 'MASTERCARD'; break; }
+                                            }
+                                        }
+                                        
+                                        if ($brand === 'Unknown') {
+                                            $brand = collect([$details['network_type'] ?? null, $details['card_type'] ?? null, $details['pg_type'] ?? null, $details['bankcode'] ?? null])
+                                                    ->first(fn($val) => !empty($val)) ?? 'Unknown';
+                                        }
+                                    }
+                                @endphp
+
+                                @if(isset($details['mode']))
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-500">Mode</span>
-                                    <span class="text-gray-900 font-medium">{{ strtoupper($order->payment->payment_details['mode']) }}</span>
+                                    <span class="text-gray-900 font-medium">{{ strtoupper($details['mode']) }}</span>
                                 </div>
                                 @endif
 
-                                @if(isset($order->payment->payment_details['card_type']))
+                                @if($isCard)
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-500">Card Type</span>
-                                    <span class="text-gray-900 font-medium">{{ ucfirst($order->payment->payment_details['card_type']) }}</span>
+                                    <span class="text-gray-500">Card Network</span>
+                                    <span class="text-gray-900 font-bold text-blue-600">{{ strtoupper($brand) }}</span>
                                 </div>
                                 @endif
 
-                                @if(isset($order->payment->payment_details['bankcode']))
+                                @if(isset($details['bankcode']) && !empty($details['bankcode']))
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-500">Bank Code</span>
-                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['bankcode'] }}</span>
+                                    <span class="text-gray-500">{{ $isCard ? 'Network Code' : 'Bank Code' }}</span>
+                                    <span class="text-gray-900 font-medium">{{ $details['bankcode'] }}</span>
                                 </div>
                                 @endif
                                 
-                                @if(isset($order->payment->payment_details['issuing_bank']))
+                                @if(!$isCard && isset($details['issuing_bank']) && !empty($details['issuing_bank']))
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-500">Issuing Bank</span>
-                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['issuing_bank'] }}</span>
+                                    <span class="text-gray-900 font-medium">{{ $details['issuing_bank'] }}</span>
                                 </div>
                                 @endif
 
-                                @if(isset($order->payment->payment_details['upi_va']))
+                                @if(isset($details['upi_va']))
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-500">UPI VPA</span>
-                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['upi_va'] }}</span>
+                                    <span class="text-gray-900 font-medium">{{ $details['upi_va'] }}</span>
                                 </div>
                                 @endif
                             </div>

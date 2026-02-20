@@ -93,7 +93,8 @@
                     <select id="insightSelector" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                         <option value="successRate">Success vs Failure Rate</option>
                         <option value="payuModes">PayU Payment Modes</option>
-                        <option value="cardType">Card Network Distribution</option>
+                        <option value="creditCard">Credit Card Brands</option>
+                        <option value="debitCard">Debit Card Brands</option>
                         <option value="topBanks">Top Issuing Banks</option>
                         <option value="aov">PayU: Avg Order Value by Mode</option>
                     </select>
@@ -162,20 +163,69 @@
 
                                             <!-- Bank / Card Details -->
                                             <div class="text-xs space-y-1">
-                                                @if(isset($payment->payment_details['card_type']))
-                                                    <div><span class="text-gray-400">Card:</span> <span class="font-medium text-gray-700">{{ $payment->payment_details['card_type'] }}</span></div>
+                                                @php
+                                                    $details = $payment->payment_details;
+                                                    $isCard = in_array(strtoupper($details['mode'] ?? ''), ['CC', 'DC']);
+                                                    
+                                                    // ULTRA-GREEDY brand search: Scan EVERY value in the response
+                                                    $allStrings = strtoupper(implode(' ', array_filter(array_values($details ?? []))));
+                                                    
+                                                    $brand = 'Unknown';
+                                                    if (str_contains($allStrings, 'VISA')) $brand = 'VISA';
+                                                    elseif (str_contains($allStrings, 'MAST') || str_contains($allStrings, 'MASTER')) $brand = 'MASTERCARD';
+                                                    elseif (str_contains($allStrings, 'RUPAY')) $brand = 'RUPAY';
+                                                    elseif (str_contains($allStrings, 'AMEX') || str_contains($allStrings, 'AMERICAN')) $brand = 'AMEX';
+                                                    elseif (str_contains($allStrings, 'DINER')) $brand = 'DINERS';
+                                                    elseif (str_contains($allStrings, 'MAES')) $brand = 'MAESTRO';
+                                                    else {
+                                                        // BIN Detection backup
+                                                        foreach($details as $k => $v) {
+                                                            if (is_string($v) && preg_match('/^[0-9]{6,16}/', $v)) {
+                                                                if (str_starts_with($v, '4')) { $brand = 'VISA'; break; }
+                                                                if (preg_match('/^5[1-5]/', $v)) { $brand = 'MASTERCARD'; break; }
+                                                            }
+                                                        }
+                                                        
+                                                        if ($brand === 'Unknown') {
+                                                            // Fallback to first non-empty field
+                                                            $brand = collect([
+                                                                $details['network_type'] ?? null,
+                                                                $details['card_type'] ?? null, 
+                                                                $details['pg_type'] ?? null, 
+                                                                $details['bankcode'] ?? null
+                                                            ])->first(fn($val) => !empty($val)) ?? 'Unknown';
+                                                        }
+                                                    }
+                                                @endphp
+
+                                                @if($isCard)
+                                                    <div><span class="text-gray-400">Card Network:</span> <span class="font-bold text-blue-600">{{ strtoupper($brand) }}</span></div>
+                                                    @if(isset($details['bankcode']) && !empty($details['bankcode']))
+                                                        <div><span class="text-gray-400">Network Code:</span> <span class="font-medium text-gray-700">{{ $details['bankcode'] }}</span></div>
+                                                    @endif
+
+                                                    {{-- Debug info for BIN --}}
+                                                    <div class="flex gap-2 mt-1">
+                                                        @foreach(['network_type', 'field2', 'PG_TYPE'] as $f)
+                                                            @if(!empty($details[$f]))
+                                                                <span class="text-[9px] bg-gray-50 px-1 rounded text-gray-400">{{ $f }}: {{ $details[$f] }}</span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    @if(isset($details['issuing_bank']))
+                                                        <div><span class="text-gray-400">Bank:</span> <span class="font-medium text-gray-700">{{ $details['issuing_bank'] }}</span></div>
+                                                    @endif
+                                                    @if(isset($details['bankcode']))
+                                                        <div><span class="text-gray-400">Bank Code:</span> <span class="font-medium text-gray-700">{{ $details['bankcode'] }}</span></div>
+                                                    @endif
+                                                    @if(isset($details['upi_va']))
+                                                        <div><span class="text-gray-400">UPI:</span> <span class="font-medium text-gray-700">{{ $details['upi_va'] }}</span></div>
+                                                    @endif
                                                 @endif
-                                                @if(isset($payment->payment_details['name_on_card']))
-                                                    <div><span class="text-gray-400">Name:</span> <span class="font-medium text-gray-700">{{ $payment->payment_details['name_on_card'] }}</span></div>
-                                                @endif
-                                                @if(isset($payment->payment_details['issuing_bank']))
-                                                    <div><span class="text-gray-400">Bank:</span> <span class="font-medium text-gray-700">{{ $payment->payment_details['issuing_bank'] }}</span></div>
-                                                @endif
-                                                @if(isset($payment->payment_details['bankcode']))
-                                                    <div><span class="text-gray-400">Bank Code:</span> <span class="font-medium text-gray-700">{{ $payment->payment_details['bankcode'] }}</span></div>
-                                                @endif
-                                                @if(isset($payment->payment_details['upi_va']))
-                                                    <div><span class="text-gray-400">UPI:</span> <span class="font-medium text-gray-700">{{ $payment->payment_details['upi_va'] }}</span></div>
+
+                                                @if(isset($details['name_on_card']))
+                                                    <div><span class="text-gray-400">Name:</span> <span class="font-medium text-gray-700">{{ $details['name_on_card'] }}</span></div>
                                                 @endif
                                             </div>
 
@@ -345,11 +395,17 @@
             data: @json($payuModeStats),
             colors: ['#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6']
         },
-        cardType: {
+        creditCard: {
             type: 'pie',
-            label: 'Transactions',
-            data: @json($cardTypeStats),
+            label: 'Credit Card Brands',
+            data: @json($creditCardStats),
             colors: ['#3B82F6', '#EF4444', '#F59E0B', '#10B981', '#6366F1']
+        },
+        debitCard: {
+            type: 'pie',
+            label: 'Debit Card Brands',
+            data: @json($debitCardStats),
+            colors: ['#10B981', '#6366F1', '#3B82F6', '#EF4444', '#F59E0B']
         },
         topBanks: {
             type: 'bar',

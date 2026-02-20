@@ -187,17 +187,18 @@ class CheckoutController extends Controller
                 'payment_method' => 'payu',
                 'status' => 'completed',
                 'paid_at' => now(),
-                'payment_details' => [
+                'payment_details' => array_merge($request->all(), [
                     'mode' => $request->mode,
                     'bankcode' => $request->bankcode,
                     'card_type' => $request->card_type,
+                    'network_type' => $request->network_type, // Capturing specific network type as identified by user
                     'name_on_card' => $request->name_on_card,
                     'issuing_bank' => $request->issuing_bank,
-                    'upi_va' => $request->field4, // UPI VPA often comes in field4 or udph fields depending on config
+                    'upi_va' => $request->field4, 
                     'error_message' => $request->error_Message,
                     'pg_type' => $request->PG_TYPE, 
                     'bank_ref_num' => $request->bank_ref_num,
-                ],
+                ]),
             ]);
 
             $order->update([

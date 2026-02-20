@@ -92,17 +92,57 @@ class ReportController extends Controller
                 return $group->count();
             });
 
-        // 8. Card Type Distribution
-        $cardTypeStats = \App\Models\Payment::where('payment_method', 'payu')
+        // Helper to extract and normalize card network (Ultra-Greedy version)
+        $normalizeCardType = function($payment) {
+            $details = $payment->payment_details;
+            if (empty($details)) return 'Unknown';
+            
+            // Search every single value in the details array for brand keywords
+            $allValues = strtoupper(implode(' ', array_filter(array_values($details))));
+            
+            if (str_contains($allValues, 'VISA')) return 'VISA';
+            if (str_contains($allValues, 'MAST') || str_contains($allValues, 'MASTER')) return 'MASTERCARD';
+            if (str_contains($allValues, 'RUPAY')) return 'RUPAY';
+            if (str_contains($allValues, 'AMEX') || str_contains($allValues, 'AMERICAN')) return 'AMEX';
+            if (str_contains($allValues, 'DINER')) return 'DINERS';
+            if (str_contains($allValues, 'MAES')) return 'MAESTRO';
+
+            // BIN Detection backup
+            foreach($details as $k => $v) {
+                if (is_string($v) && preg_match('/^[0-9]{6,16}/', $v)) {
+                    if (str_starts_with($v, '4')) return 'VISA';
+                    if (preg_match('/^5[1-5]/', $v)) return 'MASTERCARD';
+                }
+            }
+
+            // Fallback: use first non-empty specific field
+            $rawBrand = collect([
+                $details['network_type'] ?? null,
+                $details['card_type'] ?? null,
+                $details['bankcode'] ?? null,
+                $details['pg_type'] ?? null,
+            ])->first(fn($val) => !empty($val)) ?? 'Unknown Card Type';
+            
+            return $rawBrand;
+        };
+
+        // 8a. Credit Card Network Distribution
+        $creditCardStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->where('status', 'completed')
             ->get()
-            ->groupBy(function($payment) {
-                 return isset($payment->payment_details['card_type']) 
-                    ? strtoupper($payment->payment_details['card_type']) 
-                    : 'Unknown';
-            })
-            ->map(function($group) { return $group->count(); })
-            ->sortDesc()
-            ->take(5);
+            ->filter(fn($p) => strtoupper($p->payment_details['mode'] ?? '') === 'CC')
+            ->groupBy($normalizeCardType)
+            ->map(fn($g) => $g->count())
+            ->sortDesc();
+
+        // 8b. Debit Card Network Distribution
+        $debitCardStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->where('status', 'completed')
+            ->get()
+            ->filter(fn($p) => strtoupper($p->payment_details['mode'] ?? '') === 'DC')
+            ->groupBy($normalizeCardType)
+            ->map(fn($g) => $g->count())
+            ->sortDesc();
 
         // 9. Top Issuing Banks
         $bankStats = \App\Models\Payment::where('payment_method', 'payu')
@@ -168,7 +208,8 @@ class ReportController extends Controller
             'payuTransactions',
             'paymentTypeStats',
             'payuModeStats',
-            'cardTypeStats',
+            'creditCardStats',
+            'debitCardStats',
             'bankStats',
             'aovStats',
             'aovComparisonStats',
