@@ -69,9 +69,91 @@
                     <canvas id="customerChart"></canvas>
                 </div>
             </div>
+
+            <!-- Payment Type Chart (COD vs PayU) -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Method (COD vs Online)</h2>
+                 <div class="h-64 flex justify-center">
+                    <canvas id="paymentTypeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- PayU Mode Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">PayU Payment Modes</h2>
+                 <div class="h-64 flex justify-center">
+                    <canvas id="payuModeChart"></canvas>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+
+        <!-- Recent PayU Transactions -->
+        <div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent PayU Transactions</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($payuTransactions as $payment)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $payment->paid_at->format('M d, Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <a href="{{ route('admin.orders.show', $payment->order_id) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $payment->transaction_id }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $payment->order->user->name ?? 'Guest' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ₹{{ number_format($payment->amount, 0) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {{ isset($payment->payment_details['mode']) ? strtoupper($payment->payment_details['mode']) : 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    @if($payment->payment_details)
+                                        <div class="text-xs">
+                                            @if(isset($payment->payment_details['card_type']))
+                                                <div class="font-medium text-gray-900">{{ ucfirst($payment->payment_details['card_type']) }}</div>
+                                            @endif
+                                            @if(isset($payment->payment_details['issuing_bank']))
+                                                <div>{{ $payment->payment_details['issuing_bank'] }}</div>
+                                            @endif
+                                            @if(isset($payment->payment_details['upi_va']))
+                                                <div>{{ $payment->payment_details['upi_va'] }}</div>
+                                            @endif
+                                            @if(!isset($payment->payment_details['card_type']) && !isset($payment->payment_details['upi_va']) && isset($payment->payment_details['bankcode']))
+                                                <div>Bank: {{ $payment->payment_details['bankcode'] }}</div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">No PayU transactions found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -143,6 +225,52 @@
             scales: {
                 y: { beginAtZero: true, ticks: { stepSize: 1 } }
             }
+        }
+    });
+
+    // Payment Type Chart (COD vs Online)
+    const typeCtx = document.getElementById('paymentTypeChart').getContext('2d');
+    const typeData = @json($paymentTypeStats);
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(typeData),
+            datasets: [{
+                data: Object.values(typeData),
+                backgroundColor: [
+                    '#10B981', // Green (COD)
+                    '#3B82F6', // Blue (PayU)
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // PayU Mode Chart
+    const modeCtx = document.getElementById('payuModeChart').getContext('2d');
+    const modeData = @json($payuModeStats);
+    new Chart(modeCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(modeData),
+            datasets: [{
+                data: Object.values(modeData),
+                backgroundColor: [
+                    '#F59E0B', // Amber
+                    '#EF4444', // Red
+                    '#8B5CF6', // Violet
+                    '#EC4899', // Pink
+                    '#6366F1', // Indigo
+                    '#14B8A6', // Teal
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 </script>

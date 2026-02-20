@@ -134,6 +134,47 @@
                             <span class="text-gray-500">Transaction ID</span>
                             <span class="text-gray-900 font-medium text-xs">{{ $order->payment->transaction_id ?? '-' }}</span>
                         </div>
+                        
+                        @if($order->payment && $order->payment->payment_details)
+                            <div class="pt-3 mt-3 border-t border-gray-100 space-y-2">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">PayU Details</p>
+                                
+                                @if(isset($order->payment->payment_details['mode']))
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Mode</span>
+                                    <span class="text-gray-900 font-medium">{{ strtoupper($order->payment->payment_details['mode']) }}</span>
+                                </div>
+                                @endif
+
+                                @if(isset($order->payment->payment_details['card_type']))
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Card Type</span>
+                                    <span class="text-gray-900 font-medium">{{ ucfirst($order->payment->payment_details['card_type']) }}</span>
+                                </div>
+                                @endif
+
+                                @if(isset($order->payment->payment_details['bankcode']))
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Bank Code</span>
+                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['bankcode'] }}</span>
+                                </div>
+                                @endif
+                                
+                                @if(isset($order->payment->payment_details['issuing_bank']))
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Issuing Bank</span>
+                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['issuing_bank'] }}</span>
+                                </div>
+                                @endif
+
+                                @if(isset($order->payment->payment_details['upi_va']))
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">UPI VPA</span>
+                                    <span class="text-gray-900 font-medium">{{ $order->payment->payment_details['upi_va'] }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
 

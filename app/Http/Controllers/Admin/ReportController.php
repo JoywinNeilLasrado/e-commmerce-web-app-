@@ -61,11 +61,53 @@ class ReportController extends Controller
             ->orderBy('month')
             ->get();
 
+        // 6. Payment Type Distribution (COD vs PayU)
+        $paymentTypeStats = \App\Models\Payment::where('status', 'completed')
+            ->select('payment_method', DB::raw('count(*) as total'))
+            ->groupBy('payment_method')
+            ->pluck('total', 'payment_method')
+            ->mapWithKeys(function($value, $key) {
+                return [($key === 'cod' ? 'Cash on Delivery' : 'PayU Online') => $value];
+            });
+
+        // 7. PayU Mode Distribution
+        $payuModeStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->where('status', 'completed') 
+            ->get()
+            ->groupBy(function($payment) {
+                if (isset($payment->payment_details['mode'])) {
+                    $mode = strtoupper($payment->payment_details['mode']);
+                     return match($mode) {
+                        'CC' => 'Credit Card',
+                        'DC' => 'Debit Card',
+                        'NB' => 'Net Banking',
+                        'UPI' => 'UPI',
+                        'WALLET' => 'Wallet',
+                        default => $mode
+                    };
+                }
+                return 'Unknown/Other';
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
+        // 5. Recent PayU Transactions
+        $payuTransactions = \App\Models\Payment::where('payment_method', 'payu')
+            ->where('status', 'completed')
+            ->with(['order.user'])
+            ->latest('paid_at')
+            ->take(10)
+            ->get();
+
         return view('admin.reports.index', compact(
             'salesData', 
             'topProducts', 
             'orderStatusDist', 
-            'customerGrowth'
+            'customerGrowth',
+            'payuTransactions',
+            'paymentTypeStats',
+            'payuModeStats'
         ));
     }
 }
