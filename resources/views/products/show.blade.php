@@ -141,39 +141,93 @@
                     
                     <!-- Write Review Form -->
                     @auth
-                        <form action="{{ route('reviews.store') }}" method="POST" class="mb-10 bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>
-                                    <div class="flex items-center gap-1 group/stars">
-                                        @for($i = 1; $i <= 5; $i++)
-                                            <button type="button" onclick="setRating({{ $i }})" 
-                                                    class="star-btn transition-colors focus:outline-none text-gray-300 hover:text-amber-400 p-1" 
-                                                    data-rating="{{ $i }}">
-                                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                </svg>
-                                            </button>
-                                        @endfor
+                        @if(isset($userReview) && $userReview)
+                             <div id="review-status-message" class="mb-10 bg-green-50 rounded-2xl p-6 border border-green-100 flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 text-green-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                     </div>
-                                    <input type="hidden" name="rating" id="rating-input" required>
-                                    <p id="rating-error" class="text-red-500 text-xs mt-1 hidden">Please select a rating</p>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-green-900">You've already reviewed this product</h4>
+                                        <p class="text-sm text-green-700 mt-0.5">Thank you for your feedback!</p>
+                                    </div>
                                 </div>
-                                
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Review <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                    <textarea name="comment" rows="3" placeholder="Share your experience with this phone..."
-                                              class="w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 mb-3"></textarea>
-                                    
-                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-md shadow-blue-600/20 float-right">
-                                        Submit Review
-                                    </button>
-                                </div>
+                                <button onclick="toggleEditReview()" class="text-xs font-bold text-green-700 hover:text-green-900 underline">
+                                    Edit Review
+                                </button>
                             </div>
-                        </form>
+
+                            <form id="edit-review-form" action="{{ route('reviews.update', $userReview->id) }}" method="POST" class="hidden mb-10 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Edit Your Rating</label>
+                                        <div class="flex items-center gap-1 group/stars">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <button type="button" onclick="setRating({{ $i }})" 
+                                                        class="star-btn transition-colors focus:outline-none {{ $i <= $userReview->rating ? 'text-amber-400' : 'text-gray-300' }} hover:text-amber-400 p-1" 
+                                                        data-rating="{{ $i }}">
+                                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </button>
+                                            @endfor
+                                        </div>
+                                        <input type="hidden" name="rating" id="rating-input" value="{{ $userReview->rating }}" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Edit Your Review</label>
+                                        <textarea name="comment" rows="3" placeholder="Share your experience with this phone..."
+                                                  class="w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 mb-3">{{ $userReview->comment }}</textarea>
+                                        
+                                        <div class="flex justify-end gap-2">
+                                            <button type="button" onclick="toggleEditReview()" class="text-gray-500 hover:text-gray-700 font-bold py-2.5 px-4 text-sm">Cancel</button>
+                                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-md shadow-blue-600/20">
+                                                Update Review
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        @else
+                            <form action="{{ route('reviews.store') }}" method="POST" class="mb-10 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>
+                                        <div class="flex items-center gap-1 group/stars">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <button type="button" onclick="setRating({{ $i }})" 
+                                                        class="star-btn transition-colors focus:outline-none text-gray-300 hover:text-amber-400 p-1" 
+                                                        data-rating="{{ $i }}">
+                                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </button>
+                                            @endfor
+                                        </div>
+                                        <input type="hidden" name="rating" id="rating-input" required>
+                                        <p id="rating-error" class="text-red-500 text-xs mt-1 hidden">Please select a rating</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Review <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
+                                        <textarea name="comment" rows="3" placeholder="Share your experience with this phone..."
+                                                  class="w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 mb-3"></textarea>
+                                        
+                                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-md shadow-blue-600/20 float-right">
+                                            Submit Review
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        @endif
                     @else
                         <div class="mb-10 bg-blue-50/50 rounded-2xl p-6 border border-blue-100 flex items-center justify-between">
                             <div>
@@ -451,6 +505,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const starBtns = document.querySelectorAll('.star-btn');
     const ratingInput = document.getElementById('rating-input');
     const ratingError = document.getElementById('rating-error');
+
+    window.toggleEditReview = function() {
+        const message = document.getElementById('review-status-message');
+        const form = document.getElementById('edit-review-form');
+        
+        if (message && form) {
+            message.classList.toggle('hidden');
+            form.classList.toggle('hidden');
+        }
+    }
 
     window.setRating = function(rating) {
         if (!ratingInput) return;

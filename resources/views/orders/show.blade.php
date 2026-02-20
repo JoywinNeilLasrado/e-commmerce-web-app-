@@ -65,7 +65,8 @@
 
                                     <div class="mt-4 border-t border-gray-100 pt-4">
                                         @if($userReview)
-                                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                            <!-- View Review Mode -->
+                                            <div id="view-review-{{ $item->id }}" class="bg-gray-50 rounded-xl p-4 border border-gray-100 relative group">
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Rating</span>
                                                     <div class="flex">
@@ -79,7 +80,50 @@
                                                 @if($userReview->comment)
                                                     <p class="text-sm text-gray-600">"{{ $userReview->comment }}"</p>
                                                 @endif
+                                                
+                                                <button onclick="toggleOrderEdit('{{ $item->id }}')" class="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Edit Review">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
                                             </div>
+
+                                            <!-- Edit Review Mode (Hidden) -->
+                                            <form id="edit-review-{{ $item->id }}" action="{{ route('reviews.update', $userReview->id) }}" method="POST" class="hidden bg-white rounded-xl p-4 border border-gray-200 shadow-sm relative">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="hidden" name="product_id" value="{{ $item->productVariant->product->id }}">
+                                                
+                                                <button type="button" onclick="toggleOrderEdit('{{ $item->id }}')" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
+
+                                                <div class="mb-4">
+                                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Edit Rating</label>
+                                                    <div class="flex items-center gap-1 group/stars-{{ $item->id }}">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <button type="button" onclick="setOrderRating({{ $i }}, '{{ $item->id }}')" 
+                                                                    class="star-btn-{{ $item->id }} transition-colors focus:outline-none {{ $i <= $userReview->rating ? 'text-amber-400' : 'text-gray-300' }} hover:text-amber-400 p-1" 
+                                                                    data-rating="{{ $i }}">
+                                                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                                </svg>
+                                                            </button>
+                                                        @endfor
+                                                    </div>
+                                                    <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" value="{{ $userReview->rating }}" required>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Edit Review</label>
+                                                    <textarea name="comment" rows="2" placeholder="Share your experience..."
+                                                              class="w-full rounded-lg border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500">{{ $userReview->comment }}</textarea>
+                                                </div>
+                                                
+                                                <div class="text-right">
+                                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition-all shadow-md shadow-blue-600/20">
+                                                        Update
+                                                    </button>
+                                                </div>
+                                            </form>
                                         @else
                                             <form action="{{ route('reviews.store') }}" method="POST" class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                                                 @csrf
@@ -191,13 +235,23 @@
 </div>
 
 <script>
+    function toggleOrderEdit(itemId) {
+        const viewMode = document.getElementById(`view-review-${itemId}`);
+        const editMode = document.getElementById(`edit-review-${itemId}`);
+        
+        if (viewMode && editMode) {
+            viewMode.classList.toggle('hidden');
+            editMode.classList.toggle('hidden');
+        }
+    }
+
     function setOrderRating(rating, itemId) {
-        const input = document.getElementById('rating-input-' + itemId);
-        if (!input) return;
+        const ratingInput = document.getElementById(`rating-input-${itemId}`);
+        if (!ratingInput) return;
         
-        input.value = rating;
+        ratingInput.value = rating;
         
-        const stars = document.querySelectorAll('.star-btn-' + itemId);
+        const stars = document.querySelectorAll(`.star-btn-${itemId}`);
         stars.forEach(btn => {
             const btnRating = parseInt(btn.dataset.rating);
             if (btnRating <= rating) {

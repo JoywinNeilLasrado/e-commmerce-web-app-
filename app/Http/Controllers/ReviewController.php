@@ -34,4 +34,25 @@ class ReviewController extends Controller
 
         return back()->with('success', 'Thank you for your review!');
     }
+
+    public function update(Request $request, Review $review)
+    {
+        // Ensure user owns the review
+        if ($review->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $review->update([
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
+            'is_approved' => true, // Re-approve on edit or set to false to require moderation
+        ]);
+
+        return back()->with('success', 'Your review has been updated!');
+    }
 }

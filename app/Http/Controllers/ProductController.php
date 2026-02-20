@@ -77,6 +77,11 @@ class ProductController extends Controller
             ->take(4)
             ->get();
 
-        return view('products.show', compact('product', 'relatedProducts'));
+        $userReview = null;
+        if (auth()->check()) {
+            $userReview = $product->reviews()->where('user_id', auth()->id())->first();
+        }
+
+        return view('products.show', compact('product', 'relatedProducts', 'userReview'));
     }
 }
