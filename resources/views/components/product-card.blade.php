@@ -32,19 +32,7 @@
         </div>
     </a>
 
-    <!-- Wishlist Button -->
-    <div class="absolute top-3 right-3 z-10">
-        <form action="{{ route('wishlist.toggle', $product) }}" method="POST">
-            @csrf
-            <button type="submit" 
-                    class="p-2 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-gray-100 hover:scale-110 active:scale-95 transition-all duration-200 group/wishlist">
-                <svg class="w-4 h-4 {{ $product->inWishlist() ? 'text-red-500 fill-current' : 'text-gray-400 group-hover/wishlist:text-red-400' }}" 
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-            </button>
-        </form>
-    </div>
+
 
     <!-- Info Area -->
     <div class="p-5 flex flex-col flex-grow">
@@ -78,11 +66,24 @@
                     <span class="block text-xs text-gray-400 line-through">₹{{ number_format($originalPrice, 0) }}</span>
                 @endif
             </div>
-            <a href="{{ route('products.show', $product->slug) }}"
-               class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-blue-600/25 hover:shadow-blue-600/40 hover:scale-105 active:scale-95">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                Buy
-            </a>
+            <div class="flex items-center gap-2">
+                <form action="{{ route('wishlist.toggle', $product) }}" method="POST">
+                    @csrf
+                    <button type="submit" 
+                            class="p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-red-500 transition-colors group/wishlist">
+                        <svg class="w-5 h-5 {{ $product->inWishlist() ? 'text-red-500 fill-current' : 'text-gray-400 group-hover/wishlist:text-red-500' }}" 
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <a href="{{ route('products.show', $product->slug) }}"
+                   class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-blue-600/25 hover:shadow-blue-600/40 hover:scale-105 active:scale-95">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    Buy
+                </a>
+            </div>
         </div>
     </div>
 </div>
