@@ -39,7 +39,11 @@
                         @foreach($order->items as $item)
                             <li class="p-6 flex items-center">
                                 <div class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100 flex items-center justify-center">
-                                    <span class="text-3xl">📱</span>
+                                    @if($item->productVariant->product->primary_image_url)
+                                        <img src="{{ $item->productVariant->product->primary_image_url }}" alt="{{ $item->productVariant->product->title }}" class="h-full w-full object-cover object-center">
+                                    @else
+                                        <span class="text-3xl">📱</span>
+                                    @endif
                                 </div>
                                 <div class="ml-4 flex-1">
                                     <div class="flex justify-between">
