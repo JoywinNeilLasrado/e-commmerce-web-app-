@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+
     // ─── 6. Payment Method Radio Styling ───
     document.querySelectorAll('input[name="payment_method"]').forEach(input => {
         input.addEventListener('change', function () {
@@ -86,5 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // ─── 7. Mobile Menu Toggle ───
+    // Logic moved to inline script in app.blade.php to avoid build/caching issues.
 
 });

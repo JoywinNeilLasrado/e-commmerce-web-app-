@@ -98,9 +98,27 @@
                         @endif
                     </a>
 
-                    <!-- User Menu -->
+                    <!-- Mobile Profile Icon (Visible on ID/Mobile) -->
                     @auth
-                        <div class="relative group pl-2">
+                        <a href="{{ route('profile.edit') }}" class="md:hidden flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full text-white text-xs font-bold shadow-md shadow-blue-500/20">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="md:hidden p-2 text-gray-500 hover:text-blue-600 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </a>
+                    @endauth
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" type="button" class="md:hidden p-2 text-gray-500 hover:text-gray-900 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <!-- User Menu (Desktop) -->
+                    @auth
+                        <div class="relative group pl-2 hidden md:block">
                             <button class="flex items-center gap-3 py-1 rounded-full hover:bg-gray-50 transition-colors focus:outline-none">
                                 <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md shadow-blue-500/20">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -171,6 +189,55 @@
                         </div>
                     @endauth
                 </div>
+            </div>
+            
+            <!-- Mobile Menu hidden by default -->
+            <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white">
+                <div class="px-4 py-3 space-y-3">
+                    <form action="{{ route('products.index') }}" method="GET" class="mb-4">
+                        <div class="relative">
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                   placeholder="Search phones..."
+                                   class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500">
+                            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                    </form>
+                    
+                    <a href="{{ route('home') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('home') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Home</a>
+                    <a href="{{ route('products.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('products.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Shop</a>
+                    <a href="{{ route('compare.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('compare.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Compare</a>
+                    <a href="{{ route('sell') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('sell') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Sell</a>
+                    
+                    <div class="border-t border-gray-100 my-2"></div>
+                    
+                    @auth
+                        <div class="px-3 py-2">
+                            <div class="font-medium text-base text-gray-800">{{ auth()->user()->name }}</div>
+                            <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
+                        </div>
+                        <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">My Profile</a>
+                        <a href="{{ route('orders.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">My Orders</a>
+                        <a href="{{ route('wishlist.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                             My Wishlist 
+                             @if(auth()->user()->wishlists()->count() > 0)
+                                <span class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{{ auth()->user()->wishlists()->count() }}</span>
+                             @endif
+                        </a>
+                        
+                        @role('admin')
+                            <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">Admin Dashboard</a>
+                        @endrole
+                        
+                        <form method="POST" action="{{ route('logout') }}" class="mt-2">
+                            @csrf
+                            <button type="submit" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-red-600 hover:bg-red-50">Sign Out</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">Log in</a>
+                        <a href="{{ route('register') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">Sign up</a>
+                    @endauth
+                </div>
+            </div>
             </div>
         </div>
     </nav>
@@ -269,5 +336,29 @@
         </div>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('hidden');
+                    console.log('Mobile menu toggled'); // Debugging
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            } else {
+                console.error('Mobile menu elements not found');
+            }
+        });
+    </script>
 </body>
 </html>
