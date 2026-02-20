@@ -78,11 +78,28 @@
                 </div>
             </div>
 
-            <!-- PayU Mode Chart -->
+            <!-- Avg Order Value Chart (COD vs PayU) -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">PayU Payment Modes</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Avg Order Value: COD vs PayU</h2>
                  <div class="h-64 flex justify-center">
-                    <canvas id="payuModeChart"></canvas>
+                    <canvas id="aovComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- PayU Insights (Interactive) -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">PayU Insights</h2>
+                    <select id="insightSelector" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                        <option value="successRate">Success vs Failure Rate</option>
+                        <option value="payuModes">PayU Payment Modes</option>
+                        <option value="cardType">Card Network Distribution</option>
+                        <option value="topBanks">Top Issuing Banks</option>
+                        <option value="aov">PayU: Avg Order Value by Mode</option>
+                    </select>
+                </div>
+                <div class="h-64 sm:h-80">
+                    <canvas id="insightsChart"></canvas>
                 </div>
             </div>
         </div>
@@ -284,22 +301,18 @@
         }
     });
 
-    // PayU Mode Chart
-    const modeCtx = document.getElementById('payuModeChart').getContext('2d');
-    const modeData = @json($payuModeStats);
-    new Chart(modeCtx, {
+    // Avg Order Value Chart (COD vs PayU)
+    const aovComparisonCtx = document.getElementById('aovComparisonChart').getContext('2d');
+    const aovComparisonData = @json($aovComparisonStats);
+    new Chart(aovComparisonCtx, {
         type: 'pie',
         data: {
-            labels: Object.keys(modeData),
+            labels: Object.keys(aovComparisonData),
             datasets: [{
-                data: Object.values(modeData),
+                data: Object.values(aovComparisonData),
                 backgroundColor: [
-                    '#F59E0B', // Amber
-                    '#EF4444', // Red
-                    '#8B5CF6', // Violet
-                    '#EC4899', // Pink
-                    '#6366F1', // Indigo
-                    '#14B8A6', // Teal
+                    '#10B981', // Green (COD)
+                    '#3B82F6', // Blue (PayU)
                 ]
             }]
         },
@@ -307,6 +320,87 @@
             responsive: true,
             maintainAspectRatio: false
         }
+    });
+
+
+    // PayU Insights Interactive Chart
+    const insightCtx = document.getElementById('insightsChart').getContext('2d');
+    let insightsChart = null;
+
+    const datasets = {
+        successRate: {
+            type: 'doughnut',
+            label: 'Transactions',
+            data: @json($successRateStats),
+            colors: ['#10B981', '#EF4444', '#FCD34D'] // Green (Success), Red (Failed), Yellow (Other)
+        },
+        payuModes: {
+            type: 'pie',
+            label: 'Transactions',
+            data: @json($payuModeStats),
+            colors: ['#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6']
+        },
+        cardType: {
+            type: 'pie',
+            label: 'Transactions',
+            data: @json($cardTypeStats),
+            colors: ['#3B82F6', '#EF4444', '#F59E0B', '#10B981', '#6366F1']
+        },
+        topBanks: {
+            type: 'bar',
+            label: 'Transactions',
+            data: @json($bankStats),
+            colors: '#8B5CF6',
+            indexAxis: 'y' // Horizontal bar
+        },
+        aov: {
+            type: 'bar',
+            label: 'Average Order Value (₹)',
+            data: @json($aovStats),
+            colors: '#EC4899'
+        }
+    };
+
+    function renderInsightChart(key) {
+        if (insightsChart) {
+            insightsChart.destroy();
+        }
+
+        const config = datasets[key];
+        // Standardize data format for Chart.js
+        const labels = Object.keys(config.data);
+        const values = Object.values(config.data);
+        const backgroundColors = config.colors; 
+
+        insightsChart = new Chart(insightCtx, {
+            type: config.type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: config.label,
+                    data: values,
+                    backgroundColor: backgroundColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: config.indexAxis || 'x',
+                scales: config.type === 'bar' ? {
+                    y: { beginAtZero: true },
+                    x: { beginAtZero: true }
+                } : {}
+            }
+        });
+    }
+
+    // Initial render
+    renderInsightChart('successRate');
+
+    // Event Listener
+    document.getElementById('insightSelector').addEventListener('change', function(e) {
+        renderInsightChart(e.target.value);
     });
 </script>
 @endsection

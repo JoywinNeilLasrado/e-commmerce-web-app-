@@ -92,13 +92,71 @@ class ReportController extends Controller
                 return $group->count();
             });
 
+        // 8. Card Type Distribution
+        $cardTypeStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->get()
+            ->groupBy(function($payment) {
+                 return isset($payment->payment_details['card_type']) 
+                    ? strtoupper($payment->payment_details['card_type']) 
+                    : 'Unknown';
+            })
+            ->map(function($group) { return $group->count(); })
+            ->sortDesc()
+            ->take(5);
+
+        // 9. Top Issuing Banks
+        $bankStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->get()
+            ->groupBy(function($payment) {
+                 if (isset($payment->payment_details['issuing_bank']) && !empty($payment->payment_details['issuing_bank'])) {
+                     return $payment->payment_details['issuing_bank'];
+                 }
+                 if (isset($payment->payment_details['bankcode']) && !empty($payment->payment_details['bankcode'])) {
+                     return $payment->payment_details['bankcode']; // Fallback to bank code
+                 }
+                 return 'Other / Not Provided';
+            })
+            ->map(function($group) { return $group->count(); })
+            ->sortDesc()
+            ->take(5);
+
+        // 10. AOV by Payment Mode (PayU Only)
+        $aovStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->get()
+            ->filter(function ($payment) {
+                // Filter out if mode is missing or just 'PayU' to show only specific modes
+                return isset($payment->payment_details['mode']) 
+                    && !empty($payment->payment_details['mode']) 
+                    && strtolower($payment->payment_details['mode']) !== 'payu';
+            })
+            ->groupBy(function($payment) {
+                return $payment->payment_details['mode'];
+            })
+            ->map(function($group) {
+                return round($group->avg('amount'), 0);
+            });
+
+        // 12. AOV Comparison (COD vs PayU)
+        $aovComparisonStats = \App\Models\Payment::all()
+            ->groupBy(function($payment) {
+                return $payment->payment_method === 'cod' ? 'COD' : 'PayU (Online)';
+            })
+            ->map(function($group) {
+                return round($group->avg('amount'), 0);
+            });
+
+        // 11. Success vs Failure Rate
+        $successRateStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         // 5. Recent PayU Transactions
         $payuTransactions = \App\Models\Payment::where('payment_method', 'payu')
-            ->where('status', 'completed')
             ->with(['order.user'])
             ->latest('paid_at')
             ->take(10)
-            ->get();
+            ->get();        
 
         return view('admin.reports.index', compact(
             'salesData', 
@@ -107,7 +165,12 @@ class ReportController extends Controller
             'customerGrowth',
             'payuTransactions',
             'paymentTypeStats',
-            'payuModeStats'
+            'payuModeStats',
+            'cardTypeStats',
+            'bankStats',
+            'aovStats',
+            'aovComparisonStats',
+            'successRateStats'
         ));
     }
 }
