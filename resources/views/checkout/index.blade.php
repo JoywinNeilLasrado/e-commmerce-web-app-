@@ -99,10 +99,17 @@
                         </div>
 
                         <div class="space-y-3">
+                            @error('payment_method')
+                                <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 font-medium flex items-center gap-2 animate-bounce">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    Please choose a payment method to continue.
+                                </div>
+                            @enderror
+
                             @foreach([['payu', 'PayU Money', '💸', 'Secure Payment'], ['cod', 'Cash on Delivery', '💵', 'No extra charge']] as [$value, $label, $icon, $note])
                                 <label class="relative cursor-pointer">
                                     <input type="radio" name="payment_method" value="{{ $value }}"
-                                           class="sr-only peer" {{ $value === 'card' ? 'checked' : '' }}>
+                                           class="sr-only peer" required>
                                     <div class="flex items-center gap-4 border-2 border-gray-100 peer-checked:border-blue-500 peer-checked:bg-blue-50 rounded-2xl p-5 transition-all duration-200 hover:border-blue-200">
                                         <span class="text-2xl">{{ $icon }}</span>
                                         <div class="flex-1">

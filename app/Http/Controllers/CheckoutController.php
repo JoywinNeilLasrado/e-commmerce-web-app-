@@ -164,7 +164,13 @@ class CheckoutController extends Controller
         }
 
         if ($hash != $posted_hash) {
-            return redirect()->route('orders.show', $order)->with('error', 'Invalid Transaction. Please try again.');
+            DB::transaction(function () use ($order) {
+                foreach ($order->items as $item) {
+                    $item->productVariant->increment('stock', $item->quantity);
+                }
+                $order->update(['status' => 'cancelled']);
+            });
+            return redirect()->route('checkout.index')->with('error', 'Invalid payment response. Please try again.');
         }
 
         // Fix for Session Loss: Manually login user if hash is valid
@@ -215,9 +221,21 @@ class CheckoutController extends Controller
                 'amount' => $amount,
                 'payment_method' => 'payu',
                 'status' => 'failed',
+                'payment_details' => [
+                    'error_message' => $request->error_Message,
+                    'pg_type' => $request->PG_TYPE,
+                ]
             ]);
+
+            // Restore Stock and Cancel Order
+            DB::transaction(function () use ($order) {
+                foreach ($order->items as $item) {
+                    $item->productVariant->increment('stock', $item->quantity);
+                }
+                $order->update(['status' => 'cancelled']);
+            });
             
-            return redirect()->route('orders.show', $order)->with('error', 'Payment failed. Please try again.');
+            return redirect()->route('checkout.index')->with('error', 'Payment failed: ' . ($request->error_Message ?? 'Please try again.'));
         }
     }
 }
