@@ -74,7 +74,7 @@
                         </div>
                         <div class="flex justify-between py-2 border-b border-gray-100">
                             <span class="text-gray-600 text-sm">Payment Method</span>
-                            <span class="text-gray-900 text-sm font-medium uppercase">{{ $order->payment->method }}</span>
+                            <span class="text-gray-900 text-sm font-medium uppercase">{{ $order->payment->payment_method }}</span>
                         </div>
                          <div class="flex justify-between py-2 border-b border-gray-100">
                             <span class="text-gray-600 text-sm">Payment Status</span>

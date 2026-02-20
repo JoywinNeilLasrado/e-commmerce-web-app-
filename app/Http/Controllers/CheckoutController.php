@@ -189,8 +189,11 @@ class CheckoutController extends Controller
                 'paid_at' => now(),
             ]);
 
-            // Clear Cart
-            Cart::where('user_id', $order->user_id)->first()->items()->delete();
+            // Clear Cart (Handle potential multiple carts)
+            $carts = Cart::where('user_id', $order->user_id)->get();
+            foreach ($carts as $c) {
+                $c->items()->delete();
+            }
 
             return redirect()->route('orders.show', $order)->with('success', 'Payment successful! Your order has been placed.');
         } else {

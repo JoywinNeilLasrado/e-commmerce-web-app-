@@ -20,7 +20,11 @@
                         <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
                             <div class="flex items-center">
                                 <div class="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center text-2xl flex-shrink-0">
-                                    📱
+                                    @if($item->productVariant->product->primary_image_url)
+                                        <img src="{{ $item->productVariant->product->primary_image_url }}" alt="{{ $item->productVariant->product->title }}" class="h-full w-full object-cover object-center rounded-md">
+                                    @else
+                                        📱
+                                    @endif
                                 </div>
                                 <div class="ml-4">
                                     <h3 class="text-sm font-medium text-gray-900">{{ $item->productVariant->product->title }}</h3>
@@ -120,7 +124,7 @@
                     <div class="space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Method</span>
-                            <span class="text-gray-900 font-medium">{{ strtoupper($order->payment->method ?? 'N/A') }}</span>
+                            <span class="text-gray-900 font-medium">{{ strtoupper($order->payment->payment_method ?? 'N/A') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Status</span>
