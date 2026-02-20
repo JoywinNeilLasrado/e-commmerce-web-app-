@@ -18,6 +18,9 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/compare', [\App\Http\Controllers\CompareController::class, 'index'])->name('compare.index');
 Route::get('/sell', [\App\Http\Controllers\SellController::class, 'index'])->name('sell');
 
+// PayU Response (Public to handle callbacks without session)
+Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'])->name('payment.payu.response');
+
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
@@ -43,9 +46,7 @@ Route::middleware('auth')->group(function () {
     // Address routes
     Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
     
-    // PayU Routes
     Route::post('/payment/payu/initiate', [CheckoutController::class, 'payuInitiate'])->name('payment.payu.initiate');
-    Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'])->name('payment.payu.response');
     
     // Order routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -64,7 +65,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('product-images/{productImage}', [\App\Http\Controllers\Admin\ProductController::class, 'destroyImage'])->name('product-images.destroy');
     Route::resource('products.variants', \App\Http\Controllers\Admin\ProductVariantController::class)->except(['show']);
     Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class)->only(['index', 'show', 'update']);
-    Route::post('orders/{order}/simulate-payment', [\App\Http\Controllers\Admin\OrderController::class, 'simulatePayment'])->name('orders.simulate-payment');
+
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
     Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'update', 'destroy']);

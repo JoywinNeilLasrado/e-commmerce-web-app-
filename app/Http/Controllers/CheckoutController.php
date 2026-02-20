@@ -119,11 +119,11 @@ class CheckoutController extends Controller
                 'paid_at' => $paymentStatus === 'completed' ? now() : null,
             ]);
 
-            if ($paymentStatus === 'completed') {
+            if ($paymentStatus === 'completed' || $request->payment_method === 'cod') {
                 $order->update([
-                    'status' => 'processing',
-                    'payment_status' => 'paid',
-                    'paid_at' => now(),
+                    'status' => 'processing', // Auto-process COD orders
+                    'payment_status' => $paymentStatus === 'completed' ? 'paid' : 'pending',
+                    'paid_at' => $paymentStatus === 'completed' ? now() : null,
                 ]);
             }
 
@@ -165,6 +165,11 @@ class CheckoutController extends Controller
 
         if ($hash != $posted_hash) {
             return redirect()->route('orders.show', $order)->with('error', 'Invalid Transaction. Please try again.');
+        }
+
+        // Fix for Session Loss: Manually login user if hash is valid
+        if (!Auth::check()) {
+            Auth::loginUsingId($order->user_id);
         }
 
         if ($status == 'success') {

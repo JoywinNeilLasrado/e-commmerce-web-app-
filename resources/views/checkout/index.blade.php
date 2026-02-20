@@ -172,7 +172,7 @@
 </div>
 
 <script>
-// Peer-checked simulation for radio buttons
+// Peer-checked logic for radio buttons
 document.querySelectorAll('input[type="radio"]').forEach(input => {
     input.addEventListener('change', function() {
         const name = this.name;
