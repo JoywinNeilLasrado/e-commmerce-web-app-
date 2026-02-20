@@ -136,7 +136,7 @@
                 </div>
 
                 <!-- Reviews Section -->
-                <div class="mt-12 pt-10 border-t border-gray-100">
+                <div id="reviews" class="mt-12 pt-10 border-t border-gray-100">
                     <h3 class="text-xl font-black text-gray-900 mb-6">Customer Reviews</h3>
                     
                     <!-- Write Review Form -->

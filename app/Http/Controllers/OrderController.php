@@ -21,7 +21,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load(['items.productVariant.product', 'items.productVariant.condition', 'payment', 'address']);
+        $order->load(['items.productVariant.product.reviews', 'items.productVariant.condition', 'payment', 'address']);
 
         return view('orders.show', compact('order'));
     }

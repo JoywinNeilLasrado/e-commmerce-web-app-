@@ -58,6 +58,63 @@
                                         {{ $item->productVariant->storage }} | {{ $item->productVariant->color }} | {{ $item->productVariant->condition->name }}
                                     </p>
                                     <p class="mt-1 text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                                    
+                                    @php
+                                        $userReview = $item->productVariant->product->reviews->where('user_id', auth()->id())->first();
+                                    @endphp
+
+                                    <div class="mt-4 border-t border-gray-100 pt-4">
+                                        @if($userReview)
+                                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Rating</span>
+                                                    <div class="flex">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <svg class="w-4 h-4 {{ $i <= $userReview->rating ? 'text-amber-400' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                            </svg>
+                                                        @endfor
+                                                    </div>
+                                                </div>
+                                                @if($userReview->comment)
+                                                    <p class="text-sm text-gray-600">"{{ $userReview->comment }}"</p>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <form action="{{ route('reviews.store') }}" method="POST" class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $item->productVariant->product->id }}">
+                                                
+                                                <div class="mb-4">
+                                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>
+                                                    <div class="flex items-center gap-1 group/stars-{{ $item->id }}">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <button type="button" onclick="setOrderRating({{ $i }}, '{{ $item->id }}')" 
+                                                                    class="star-btn-{{ $item->id }} transition-colors focus:outline-none text-gray-300 hover:text-amber-400 p-1" 
+                                                                    data-rating="{{ $i }}">
+                                                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                                </svg>
+                                                            </button>
+                                                        @endfor
+                                                    </div>
+                                                    <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" required>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Review <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
+                                                    <textarea name="comment" rows="2" placeholder="Share your experience..."
+                                                              class="w-full rounded-lg border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                                </div>
+                                                
+                                                <div class="text-right">
+                                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition-all shadow-md shadow-blue-600/20">
+                                                        Submit Review
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                             </li>
                         @endforeach
@@ -132,4 +189,24 @@
         </div>
     </div>
 </div>
-@endsection
+
+<script>
+    function setOrderRating(rating, itemId) {
+        const input = document.getElementById('rating-input-' + itemId);
+        if (!input) return;
+        
+        input.value = rating;
+        
+        const stars = document.querySelectorAll('.star-btn-' + itemId);
+        stars.forEach(btn => {
+            const btnRating = parseInt(btn.dataset.rating);
+            if (btnRating <= rating) {
+                btn.classList.add('text-amber-400');
+                btn.classList.remove('text-gray-300');
+            } else {
+                btn.classList.add('text-gray-300');
+                btn.classList.remove('text-amber-400');
+            }
+        });
+    }
+</script>
