@@ -136,20 +136,71 @@
                 </div>
 
                 <!-- Reviews Section -->
-                @if($product->reviews->count() > 0)
-                    <div class="mt-10">
-                        <h3 class="text-lg font-black text-gray-900 mb-5">Customer Reviews</h3>
+                <div class="mt-12 pt-10 border-t border-gray-100">
+                    <h3 class="text-xl font-black text-gray-900 mb-6">Customer Reviews</h3>
+                    
+                    <!-- Write Review Form -->
+                    @auth
+                        <form action="{{ route('reviews.store') }}" method="POST" class="mb-10 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            
+                            <div class="grid md:grid-cols-12 gap-6">
+                                <div class="md:col-span-4">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>
+                                    <div class="flex items-center gap-1 group/stars">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <button type="button" onclick="setRating({{ $i }})" 
+                                                    class="star-btn transition-colors focus:outline-none text-gray-300 hover:text-amber-400" 
+                                                    data-rating="{{ $i }}">
+                                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                </svg>
+                                            </button>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" name="rating" id="rating-input" required>
+                                    <p id="rating-error" class="text-red-500 text-xs mt-1 hidden">Please select a rating</p>
+                                </div>
+                                
+                                <div class="md:col-span-8">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Review <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
+                                    <textarea name="comment" rows="3" placeholder="Share your experience with this phone..."
+                                              class="w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 mb-3"></textarea>
+                                    
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-md shadow-blue-600/20 float-right">
+                                        Submit Review
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="mb-10 bg-blue-50/50 rounded-2xl p-6 border border-blue-100 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-blue-900">Have you used this product?</h4>
+                                <p class="text-sm text-blue-700 mt-0.5">Share your thoughts with other customers</p>
+                            </div>
+                            <a href="{{ route('login') }}" class="bg-white text-blue-600 font-bold py-2 px-6 rounded-xl text-sm border border-blue-200 hover:bg-blue-50 transition-colors shadow-sm">
+                                Login to Review
+                            </a>
+                        </div>
+                    @endauth
+
+                    @if($product->reviews->count() > 0)
                         <div class="space-y-4">
-                            @foreach($product->reviews->where('is_approved', true)->take(3) as $review)
-                                <div class="bg-gray-50 rounded-2xl p-5">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            @foreach($product->reviews->where('is_approved', true) as $review)
+                                <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
                                                 {{ strtoupper(substr($review->user->name, 0, 1)) }}
                                             </div>
-                                            <span class="text-sm font-bold text-gray-900">{{ $review->user->name }}</span>
+                                            <div>
+                                                <span class="block text-sm font-bold text-gray-900">{{ $review->user->name }}</span>
+                                                <span class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
+                                            </div>
                                         </div>
-                                        <div class="flex">
+                                        <div class="flex bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm">
                                             @for($i = 1; $i <= 5; $i++)
                                                 <svg class="w-3.5 h-3.5 {{ $i <= $review->rating ? 'text-amber-400' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                             @endfor
@@ -161,8 +212,16 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
-                @endif
+                    @else
+                        <div class="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                            </div>
+                            <h5 class="text-sm font-bold text-gray-900">No reviews yet</h5>
+                            <p class="text-xs text-gray-500 mt-1">Be the first to share your experience!</p>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <!-- Right: Buy Box -->
@@ -192,16 +251,24 @@
                                 <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Select Variant</label>
                                 <div class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
                                     @foreach($product->variants as $variant)
-                                        <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
+                                    <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
                                             <input type="radio" name="variant_id" value="{{ $variant->id }}" 
                                                    data-price="{{ $variant->price }}" 
                                                    data-original-price="{{ $variant->original_price ?? '' }}"
+                                                   data-stock="{{ $variant->stock }}"
                                                    class="sr-only" {{ $loop->first ? 'checked' : '' }}>
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-bold text-gray-900">{{ $variant->storage }} · {{ $variant->color }}</p>
+                                                <div class="flex items-center gap-2">
+                                                    <p class="text-sm font-bold {{ $variant->stock == 0 ? 'text-gray-400' : 'text-gray-900' }}">
+                                                        {{ $variant->storage }} · {{ $variant->color }}
+                                                    </p>
+                                                    @if($variant->stock == 0)
+                                                        <span class="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded">Out of Stock</span>
+                                                    @endif
+                                                </div>
                                                 <p class="text-xs text-gray-500">{{ $variant->condition->name }} Grade</p>
                                             </div>
-                                            <span class="text-sm font-black text-blue-600 flex-shrink-0">₹{{ number_format($variant->price, 0) }}</span>
+                                            <span class="text-sm font-black {{ $variant->stock == 0 ? 'text-gray-400' : 'text-blue-600' }} flex-shrink-0">₹{{ number_format($variant->price, 0) }}</span>
                                         </label>
                                     @endforeach
                                 </div>
@@ -309,9 +376,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const originalPriceDisplay = document.getElementById('product-original-price');
     const variantInputs = document.querySelectorAll('input[name="variant_id"]');
     const baseOriginalPrice = "{{ $product->original_price }}";
+    const addToCartBtn = document.querySelector('button[value="add_to_cart"]');
+    const buyNowBtn = document.querySelector('button[value="buy_now"]');
 
-    function updatePrice(price, originalPrice) {
-        // Format prices with commas
+    function updateState(price, originalPrice, stock) {
+        // 1. Update Price
         const formattedPrice = new Intl.NumberFormat('en-IN').format(price);
         priceDisplay.textContent = '₹' + formattedPrice;
         
@@ -320,7 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
             originalPriceDisplay.textContent = '₹' + formattedOriginal;
             originalPriceDisplay.classList.remove('hidden');
         } else if (!originalPrice && baseOriginalPrice && parseFloat(baseOriginalPrice) > parseFloat(price)) {
-            // Fallback to base product original price if variant doesn't have one but base does
             const formattedOriginal = new Intl.NumberFormat('en-IN').format(baseOriginalPrice);
             originalPriceDisplay.textContent = '₹' + formattedOriginal;
             originalPriceDisplay.classList.remove('hidden');
@@ -328,27 +396,111 @@ document.addEventListener('DOMContentLoaded', function() {
             originalPriceDisplay.classList.add('hidden');
         }
         
-        // Add a subtle animation effect
+        // Animation
         priceDisplay.classList.remove('scale-100');
         priceDisplay.classList.add('scale-105', 'text-blue-600');
         setTimeout(() => {
             priceDisplay.classList.remove('scale-105', 'text-blue-600');
             priceDisplay.classList.add('scale-100');
         }, 200);
+
+        // 2. Update Buttons based on Stock
+        if (parseInt(stock) === 0) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                Out of Stock
+            `;
+            addToCartBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            addToCartBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/30', 'hover:shadow-blue-600/50', 'hover:scale-[1.02]');
+            
+            buyNowBtn.disabled = true;
+            buyNowBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            buyNowBtn.classList.remove('hover:bg-gray-800', 'hover:scale-[1.02]');
+        } else {
+            addToCartBtn.disabled = false;
+            addToCartBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                Add to Cart
+            `;
+            addToCartBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            addToCartBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/30', 'hover:shadow-blue-600/50', 'hover:scale-[1.02]');
+            
+            buyNowBtn.disabled = false;
+            buyNowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            buyNowBtn.classList.add('hover:bg-gray-800', 'hover:scale-[1.02]');
+        }
     }
 
     variantInputs.forEach(input => {
         input.addEventListener('change', function() {
             if (this.checked) {
-                updatePrice(this.dataset.price, this.dataset.originalPrice);
+                updateState(this.dataset.price, this.dataset.originalPrice, this.dataset.stock);
             }
         });
 
         // Initialize with checked input
         if (input.checked) {
-            updatePrice(input.dataset.price, input.dataset.originalPrice);
+            updateState(input.dataset.price, input.dataset.originalPrice, input.dataset.stock);
         }
     });
+
+    // Review System
+    const starBtns = document.querySelectorAll('.star-btn');
+    const ratingInput = document.getElementById('rating-input');
+    const ratingError = document.getElementById('rating-error');
+
+    window.setRating = function(rating) {
+        if (!ratingInput) return;
+        ratingInput.value = rating;
+        if(ratingError) ratingError.classList.add('hidden');
+        
+        starBtns.forEach(btn => {
+            const btnRating = parseInt(btn.dataset.rating);
+            
+            if (btnRating <= rating) {
+                btn.classList.add('text-amber-400');
+                btn.classList.remove('text-gray-300');
+            } else {
+                btn.classList.add('text-gray-300');
+                btn.classList.remove('text-amber-400');
+            }
+        });
+    }
+
+    // Hover effects
+    if (starBtns.length > 0) {
+        const starContainer = document.querySelector('.group\\/stars');
+        
+        starContainer.addEventListener('mouseleave', () => {
+            const currentRating = parseInt(ratingInput.value || 0);
+            starBtns.forEach(b => {
+                const bRating = parseInt(b.dataset.rating);
+                if (bRating <= currentRating) {
+                    b.classList.add('text-amber-400');
+                    b.classList.remove('text-gray-300');
+                } else {
+                    b.classList.add('text-gray-300');
+                    b.classList.remove('text-amber-400');
+                }
+            });
+        });
+
+        starBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const rating = parseInt(btn.dataset.rating);
+                starBtns.forEach(b => {
+                    if (parseInt(b.dataset.rating) <= rating) {
+                        b.classList.add('text-amber-400');
+                        b.classList.remove('text-gray-300');
+                    } else {
+                        b.classList.add('text-gray-300');
+                        b.classList.remove('text-amber-400');
+                    }
+                });
+            });
+        });
+    }
 });
 </script>
 @endsection

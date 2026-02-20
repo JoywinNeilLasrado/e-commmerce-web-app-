@@ -48,9 +48,13 @@
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Users
                         </a>
-                         <a href="{{ route('admin.reports.index') }}" 
+                        <a href="{{ route('admin.reports.index') }}" 
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.reports.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Reports
+                        </a>
+                        <a href="{{ route('admin.reviews.index') }}" 
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.reviews.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                            Reviews
                         </a>
                     </div>
                 </div>

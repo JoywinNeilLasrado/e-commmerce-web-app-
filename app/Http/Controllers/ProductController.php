@@ -13,7 +13,10 @@ class ProductController extends Controller
     {
         $query = Product::with(['phoneModel.brand', 'variants'])
             ->where('is_active', true)
-            ->whereNotNull('published_at');
+            ->whereNotNull('published_at')
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            });
 
         // Filter by brand
         if ($request->filled('brand')) {
