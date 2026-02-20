@@ -137,9 +137,10 @@
                                         @if($payment->status === 'completed' || $payment->status === 'paid') bg-green-100 text-green-800
                                         @elseif($payment->status === 'pending') bg-yellow-100 text-yellow-800
                                         @elseif($payment->status === 'failed') bg-red-100 text-red-800
+                                        @elseif(str_starts_with($payment->status, 'refund')) bg-gray-100 text-gray-800
                                         @else bg-gray-100 text-gray-800
                                         @endif">
-                                        {{ ucfirst($payment->status) }}
+                                        {{ ucwords(str_replace('_', ' ', $payment->status)) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 align-top">

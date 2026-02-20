@@ -128,7 +128,7 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Status</span>
-                            <span class="text-gray-900 font-medium">{{ ucfirst($order->payment->status ?? 'pending') }}</span>
+                            <span class="text-gray-900 font-medium">{{ ucwords(str_replace('_', ' ', $order->payment->status ?? 'pending')) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Transaction ID</span>

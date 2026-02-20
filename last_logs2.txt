@@ -1,0 +1,50 @@
+    make:model
+    make:notification
+    make:notifications-table
+    make:observer
+    make:policy
+    make:provider
+    make:queue-batches-table
+    make:queue-failed-table
+    make:queue-table
+    make:request
+    make:resource
+    make:rule
+    make:scope
+    make:seeder
+    make:session-table
+    make:test
+    make:trait
+    make:view at E:/PROJECTS/php_project/refurbished-phones-shop/vendor/symfony/console/Application.php:759)
+[stacktrace]
+#0 E:/PROJECTS/php_project/refurbished-phones-shop/vendor/symfony/console/Application.php(298): Symfony/Component/Console/Application->find('make:service')
+#1 E:/PROJECTS/php_project/refurbished-phones-shop/vendor/symfony/console/Application.php(195): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#2 E:/PROJECTS/php_project/refurbished-phones-shop/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#3 E:/PROJECTS/php_project/refurbished-phones-shop/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#4 E:/PROJECTS/php_project/refurbished-phones-shop/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#5 {main}
+"} 
+[2026-02-20 13:43:50] local.ERROR: Order Cancellation Error: cURL error 60: SSL peer certificate or SSH remote key was not OK (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://test.payu.in/merchant/postservice  
+[2026-02-20 13:43:57] local.ERROR: Order Cancellation Error: cURL error 60: SSL peer certificate or SSH remote key was not OK (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://test.payu.in/merchant/postservice  
+[2026-02-20 13:47:47] local.ERROR: PayU Refund Failed {"response":null,"mihpayid":"403993715536829619"} 
+[2026-02-20 13:48:08] local.ERROR: PayU Refund Failed {"response":null,"mihpayid":"403993715536829619"} 
+[2026-02-20 13:51:47] local.ERROR: PayU Refund Failed {"response":{"a:3:{s:6:\"status\";i:0;s:3:\"msg\";s:14:\"token_is_empty\";s:8:\"mihpayid\";s:18:\"403993715536829619\";}":""},"mihpayid":"403993715536829619"} 
+[2026-02-20 13:52:40] local.ERROR: PayU Refund Failed {"response":{"a:3:{s:6:\"status\";i:0;s:3:\"msg\";s:14:\"token_is_empty\";s:8:\"mihpayid\";s:18:\"403993715536829619\";}":""},"mihpayid":"403993715536829619"} 
+[2026-02-20 13:56:58] local.INFO: PayU Refund Attempt details {"hashSequence_no_salt":"n2XRc7|cancel_refund_transaction|403993715536829619","var2":"ref_6998682a4ec9b","var3":"10.00"} 
+[2026-02-20 13:56:58] local.ERROR: PayU Refund Failed {"response":{"a:6:{s:6:\"status\";i:1;s:3:\"msg\";s:21:\"Refund_Request_Queued\";s:10:\"request_id\";s:9:\"139396982\";s:12:\"bank_ref_num\";N;s:8:\"mihpayid\";i:403993715536829619;s:10:\"error_code\";i:102;}":""},"mihpayid":"403993715536829619"} 
+[2026-02-20 13:56:58] local.INFO: array (
+  'status' => false,
+  'message' => 'Refund failed via payment gateway.',
+  'data' => 
+  array (
+    'a:6:{s:6:"status";i:1;s:3:"msg";s:21:"Refund_Request_Queued";s:10:"request_id";s:9:"139396982";s:12:"bank_ref_num";N;s:8:"mihpayid";i:403993715536829619;s:10:"error_code";i:102;}' => '',
+  ),
+)  
+[2026-02-20 14:07:10] local.INFO: PayU Refund Attempt details {"hashSequence_no_salt":"n2XRc7|cancel_refund_transaction|403993715536829619","var2":"ref_69986a8e60684","var3":"15200.00"} 
+[2026-02-20 14:07:11] local.ERROR: PayU Refund Failed {"response":{"a:4:{s:6:\"status\";i:0;s:3:\"msg\";s:56:\"Refund_FAILURE_-_Transaction_lock_could_not_be_obtained_\";s:10:\"error_code\";i:120;s:8:\"mihpayid\";i:403993715536829619;}":""},"mihpayid":"403993715536829619"} 
+[2026-02-20 14:08:41] local.INFO: PayU Refund Attempt details {"hashSequence_no_salt":"n2XRc7|cancel_refund_transaction|403993715536829619","var2":"ref_69986ae9a7489","var3":"15200.00"} 
+[2026-02-20 14:08:42] local.INFO: PayU Refund test_mode bypass for Transaction Lock {"mihpayid":"403993715536829619"} 
+[2026-02-20 14:08:42] local.ERROR: Order Cancellation Error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: refurbished_phones_shop, SQL: update `payments` set `status` = refunded, `payments`.`updated_at` = 2026-02-20 14:08:42 where `id` = 18)  
+[2026-02-20 14:08:52] local.INFO: PayU Refund Attempt details {"hashSequence_no_salt":"n2XRc7|cancel_refund_transaction|403993715536829619","var2":"ref_69986af4060db","var3":"15200.00"} 
+[2026-02-20 14:08:52] local.INFO: PayU Refund test_mode bypass for Transaction Lock {"mihpayid":"403993715536829619"} 
+[2026-02-20 14:08:52] local.ERROR: Order Cancellation Error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: refurbished_phones_shop, SQL: update `payments` set `status` = refunded, `payments`.`updated_at` = 2026-02-20 14:08:52 where `id` = 18)  

@@ -242,36 +242,43 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
-    @if(session('success') || session('error'))
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
-            @if(session('success'))
-                <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-4 text-sm font-medium shadow-sm">
-                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                    {{ session('success') }}
+    <!-- Flash Messages (Animated Toast UI) -->
+    <div id="toast-container" class="fixed top-5 left-1/2 flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none" style="z-index: 9999; transform: translateX(-50%);">
+        @if(session('success'))
+            <div class="toast-message flex items-center gap-3 bg-white/95 backdrop-blur-md border border-green-200 text-green-800 rounded-2xl px-5 py-4 text-sm font-medium shadow-2xl pointer-events-auto" style="opacity: 0; transform: translateY(-20px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                 </div>
-            @endif
-            @if(session('error'))
-                <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-5 py-4 text-sm font-medium shadow-sm">
-                    <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                    {{ session('error') }}
+                <div class="flex-1">{{ session('success') }}</div>
+                <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-green-500 hover:text-green-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="toast-message flex items-center gap-3 bg-white/95 backdrop-blur-md border border-red-200 text-red-800 rounded-2xl px-5 py-4 text-sm font-medium shadow-2xl pointer-events-auto" style="opacity: 0; transform: translateY(-20px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
                 </div>
-            @endif
-            @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl px-5 py-4 text-sm font-medium shadow-sm">
-                    <div class="flex items-center gap-3 mb-2">
-                        <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                        <span class="font-bold">Please correct the following errors:</span>
-                    </div>
-                    <ul class="list-disc list-inside space-y-1 ml-8">
+                <div class="flex-1">{{ session('error') }}</div>
+                 <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-red-500 hover:text-red-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="toast-message flex items-start gap-3 bg-white/95 backdrop-blur-md border border-red-200 text-red-800 rounded-2xl px-5 py-4 text-sm font-medium shadow-2xl pointer-events-auto" style="opacity: 0; transform: translateY(-20px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                </div>
+                <div class="flex-1">
+                    <span class="font-bold block mb-1">Please correct the following errors:</span>
+                    <ul class="list-disc list-inside space-y-1 ml-1 text-gray-600">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-            @endif
-        </div>
-    @endif
+                 <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-red-500 hover:text-red-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        @endif
+    </div>
 
     <!-- Main Content -->
     <main class="min-h-screen @yield('main-classes')">
@@ -358,6 +365,23 @@
             } else {
                 console.error('Mobile menu elements not found');
             }
+
+            // Toast Notifications Animation
+            const toasts = document.querySelectorAll('.toast-message');
+            toasts.forEach((toast, index) => {
+                // Animate in
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateY(0)';
+                }, 100 + (index * 150));
+
+                // Setup auto-hide after 5 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 500);
+                }, 5000 + (index * 150));
+            });
         });
     </script>
 </body>

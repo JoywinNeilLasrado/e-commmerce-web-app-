@@ -21,12 +21,6 @@
                 </div>
                 <p class="text-sm text-gray-500">Placed on {{ $order->created_at->format('F d, Y \a\t h:i A') }}</p>
             </div>
-            
-            @if(session('success'))
-                <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium animate-pulse">
-                    ✅ Order Placed Successfully!
-                </div>
-            @endif
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -202,7 +196,7 @@
                             <span class="text-gray-600 text-sm">Payment Status</span>
                             <span class="text-sm font-medium
                                 {{ $order->payment->status == 'paid' ? 'text-green-600' : 'text-yellow-600' }}">
-                                {{ ucfirst($order->payment->status) }}
+                                {{ ucwords(str_replace('_', ' ', $order->payment->status)) }}
                             </span>
                         </div>
                     @else

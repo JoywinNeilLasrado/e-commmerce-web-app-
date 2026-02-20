@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Services\PayUService;
 
 class OrderController extends Controller
 {
@@ -26,7 +29,7 @@ class OrderController extends Controller
         return view('orders.show', compact('order'));
     }
 
-    public function cancel(Order $order)
+    public function cancel(Order $order, PayUService $payUService)
     {
         if ($order->user_id !== Auth::id()) {
             abort(403);
@@ -37,8 +40,61 @@ class OrderController extends Controller
             return back()->with('error', 'This order cannot be cancelled as it is already ' . $order->status . '.');
         }
 
-        $order->update(['status' => 'cancelled']);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('orders.show', $order)->with('success', 'Your order has been cancelled successfully.');
+            $refundStatus = true;
+            $refundMessage = 'Your order has been cancelled successfully.';
+
+            // Process refund if payment was online and complete
+            if ($order->payment_status === 'paid') {
+                $payment = $order->payments()->where('status', 'completed')->where('payment_method', 'payu')->latest()->first();
+                if ($payment) {
+                    $mihpayid = $payment->payment_details['mihpayid'] ?? $payment->transaction_id;
+                    $refundResult = $payUService->refund($mihpayid, (float) $order->total);
+                    
+                    if ($refundResult['status']) {
+                        $isQueued = stripos($refundResult['message'], 'Queued') !== false;
+                        $statusToSet = $isQueued ? 'refund_queued' : 'refunded';
+                        $paymentDetails = $payment->payment_details ?? [];
+                        if (isset($refundResult['data']['request_id'])) {
+                            $paymentDetails['refund_request_id'] = $refundResult['data']['request_id'];
+                        }
+                        $payment->update([
+                            'status' => $statusToSet,
+                            'payment_details' => $paymentDetails
+                        ]);
+                        $order->update(['payment_status' => $statusToSet]);
+
+                        $refundMsgText = $isQueued ? 'Refund Request Queued by Payment Gateway.' : 'Refund initiated successfully.';
+                        $refundMessage = 'Your order has been cancelled. ' . $refundMsgText;
+                    } else {
+                        $refundStatus = false;
+                        $refundMessage = 'Order cancellation failed. Refund could not be processed: ' . $refundResult['message'];
+                    }
+                }
+            }
+
+            if (!$refundStatus) {
+                DB::rollBack();
+                return back()->with('error', $refundMessage);
+            }
+
+            // Restore Stock
+            foreach ($order->items as $item) {
+                $item->productVariant->increment('stock', $item->quantity);
+            }
+
+            $order->update(['status' => 'cancelled']);
+
+            DB::commit();
+
+            return redirect()->route('orders.show', $order)->with('success', $refundMessage);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Order Cancellation Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while cancelling your order. Please try again.');
+        }
     }
 }
