@@ -65,6 +65,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('product-images/{productImage}', [\App\Http\Controllers\Admin\ProductController::class, 'destroyImage'])->name('product-images.destroy');
     Route::resource('products.variants', \App\Http\Controllers\Admin\ProductVariantController::class)->except(['show']);
     Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class)->only(['index', 'show', 'update']);
+    Route::post('orders/{order}/mark-payment-received', [\App\Http\Controllers\Admin\OrderController::class, 'markPaymentReceived'])->name('orders.mark-payment-received');
 
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');

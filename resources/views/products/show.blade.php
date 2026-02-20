@@ -145,13 +145,13 @@
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             
-                            <div class="grid md:grid-cols-12 gap-6">
-                                <div class="md:col-span-4">
+                            <div class="space-y-6">
+                                <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>
                                     <div class="flex items-center gap-1 group/stars">
                                         @for($i = 1; $i <= 5; $i++)
                                             <button type="button" onclick="setRating({{ $i }})" 
-                                                    class="star-btn transition-colors focus:outline-none text-gray-300 hover:text-amber-400" 
+                                                    class="star-btn transition-colors focus:outline-none text-gray-300 hover:text-amber-400 p-1" 
                                                     data-rating="{{ $i }}">
                                                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
@@ -163,7 +163,7 @@
                                     <p id="rating-error" class="text-red-500 text-xs mt-1 hidden">Please select a rating</p>
                                 </div>
                                 
-                                <div class="md:col-span-8">
+                                <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Review <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
                                     <textarea name="comment" rows="3" placeholder="Share your experience with this phone..."
                                               class="w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 mb-3"></textarea>

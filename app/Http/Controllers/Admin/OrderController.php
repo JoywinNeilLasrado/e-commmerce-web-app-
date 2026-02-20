@@ -44,5 +44,26 @@ class OrderController extends Controller
             ->with('success', 'Order status updated successfully.');
     }
 
+    public function markPaymentReceived(Order $order)
+    {
+        // 1. Update Payment record
+        $payment = $order->payment;
+        if ($payment) {
+            $payment->update([
+                'status' => 'completed',
+                'paid_at' => now(),
+            ]);
+        }
+
+        // 2. Update Order record
+        $order->update([
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        return redirect()->route('admin.orders.show', $order)
+            ->with('success', 'Payment marked as received successfully!');
+    }
+
 
 }

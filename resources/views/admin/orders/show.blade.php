@@ -138,6 +138,19 @@
 
 
                 </div>
+
+                @if($order->payment && $order->payment->payment_method === 'cod' && $order->payment->status === 'pending')
+                    <div class="mt-6 pt-6 border-t border-gray-100">
+                        <form action="{{ route('admin.orders.mark-payment-received', $order) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Mark COD Payment Received
+                            </button>
+                        </form>
+                        <p class="text-[10px] text-gray-400 mt-2 text-center">This will mark the order as Paid.</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
