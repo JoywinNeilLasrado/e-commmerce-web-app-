@@ -8,7 +8,17 @@
         <div class="mb-6 flex justify-between items-center">
             <div>
                  <a href="{{ route('orders.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mb-2 inline-block">← Back to Orders</a>
-                <h1 class="text-3xl font-bold text-gray-900">Order #{{ $order->order_number }}</h1>
+                <div class="flex items-center gap-4">
+                    <h1 class="text-3xl font-bold text-gray-900">Order #{{ $order->order_number }}</h1>
+                    @if(in_array($order->status, ['pending', 'processing']))
+                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 text-sm font-bold text-red-600 hover:text-white border-2 border-red-600 hover:bg-red-600 rounded-xl transition-all shadow-sm">
+                                Cancel Order
+                            </button>
+                        </form>
+                    @endif
+                </div>
                 <p class="text-sm text-gray-500">Placed on {{ $order->created_at->format('F d, Y \a\t h:i A') }}</p>
             </div>
             
@@ -57,7 +67,18 @@
                                     <p class="mt-1 text-sm text-gray-500">
                                         {{ $item->productVariant->storage }} | {{ $item->productVariant->color }} | {{ $item->productVariant->condition->name }}
                                     </p>
-                                    <p class="mt-1 text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                                        <form action="{{ route('cart.store') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="variant_id" value="{{ $item->product_variant_id }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 118 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                                Buy Again
+                                            </button>
+                                        </form>
+                                    </div>
                                     
                                     @php
                                         $userReview = $item->productVariant->product->reviews->where('user_id', auth()->id())->first();

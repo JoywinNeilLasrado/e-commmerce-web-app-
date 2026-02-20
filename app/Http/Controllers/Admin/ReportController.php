@@ -122,6 +122,7 @@ class ReportController extends Controller
 
         // 10. AOV by Payment Mode (PayU Only)
         $aovStats = \App\Models\Payment::where('payment_method', 'payu')
+            ->whereIn('status', ['completed', 'paid'])
             ->get()
             ->filter(function ($payment) {
                 // Filter out if mode is missing or just 'PayU' to show only specific modes
@@ -137,7 +138,8 @@ class ReportController extends Controller
             });
 
         // 12. AOV Comparison (COD vs PayU)
-        $aovComparisonStats = \App\Models\Payment::all()
+        $aovComparisonStats = \App\Models\Payment::whereIn('status', ['completed', 'paid'])
+            ->get()
             ->groupBy(function($payment) {
                 return $payment->payment_method === 'cod' ? 'COD' : 'PayU (Online)';
             })
@@ -154,7 +156,7 @@ class ReportController extends Controller
         // 5. Recent PayU Transactions
         $payuTransactions = \App\Models\Payment::where('payment_method', 'payu')
             ->with(['order.user'])
-            ->latest('paid_at')
+            ->latest() // Use created_at instead of paid_at to avoid null error on pending
             ->take(10)
             ->get();        
 

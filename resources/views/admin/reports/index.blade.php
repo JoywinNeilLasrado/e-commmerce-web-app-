@@ -121,7 +121,7 @@
                         @forelse($payuTransactions as $payment)
                             <tr>
                                 <td class="px-6 py-4 text-sm text-gray-500 align-top">
-                                    <div class="font-medium text-gray-900">{{ $payment->paid_at->format('M d, Y H:i') }}</div>
+                                    <div class="font-medium text-gray-900">{{ ($payment->paid_at ?? $payment->created_at)->format('M d, Y H:i') }}</div>
                                     <div class="text-xs text-gray-400 mt-1">PayU ID: {{ $payment->transaction_id }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 align-top">
@@ -132,7 +132,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 align-top">
                                     <div class="font-bold">₹{{ number_format($payment->amount, 0) }}</div>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1
+                                        @if($payment->status === 'completed' || $payment->status === 'paid') bg-green-100 text-green-800
+                                        @elseif($payment->status === 'pending') bg-yellow-100 text-yellow-800
+                                        @elseif($payment->status === 'failed') bg-red-100 text-red-800
+                                        @else bg-gray-100 text-gray-800
+                                        @endif">
                                         {{ ucfirst($payment->status) }}
                                     </span>
                                 </td>

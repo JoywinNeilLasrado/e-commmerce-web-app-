@@ -25,4 +25,20 @@ class OrderController extends Controller
 
         return view('orders.show', compact('order'));
     }
+
+    public function cancel(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Only allow cancellation if order is pending or processing
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return back()->with('error', 'This order cannot be cancelled as it is already ' . $order->status . '.');
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        return redirect()->route('orders.show', $order)->with('success', 'Your order has been cancelled successfully.');
+    }
 }
