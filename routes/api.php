@@ -37,11 +37,11 @@ Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->name('api.login.post');
-    Route::post('/register', [AuthController::class, 'register'])->name('api.register.post');
+    Route::post('/login', [AuthController::class, 'apiLogin'])->name('api.login.post');
+    Route::post('/register', [AuthController::class, 'apiRegister'])->name('api.register.post');
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout')->middleware('auth:sanctum');
+Route::post('/logout', [AuthController::class, 'apiLogout'])->name('api.logout')->middleware('auth:sanctum');
 
 // Cart routes
 Route::middleware('auth:sanctum')->group(function () {
