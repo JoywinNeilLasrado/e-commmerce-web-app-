@@ -93,20 +93,13 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('api-token')->plainTextToken;
-            
+        if (!$token = auth('api')->attempt($credentials)) {
             return response()->json([
-                'message' => 'Login successful via API',
-                'user' => $user,
-                'access_token' => $token
-            ], 200);
+                'message' => 'The provided credentials do not match our records.'
+            ], 401);
         }
 
-        return response()->json([
-            'message' => 'The provided credentials do not match our records.'
-        ], 401);
+        return $this->respondWithToken($token, 'Login successful via API');
     }
 
     public function apiRegister(Request $request)
@@ -128,21 +121,37 @@ class AuthController extends Controller
         $user->assignRole('customer');
         Cart::create(['user_id' => $user->id]);
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = auth('api')->login($user);
 
-        return response()->json([
-            'message' => 'User created successfully via API',
-            'user' => $user,
-            'access_token' => $token
-        ], 201);
+        return $this->respondWithToken($token, 'User created successfully via API', 201);
     }
 
     public function apiLogout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        auth('api')->logout();
         
         return response()->json([
             'message' => 'Logged out successfully via API'
         ], 200);
+    }
+
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     * @param  string $message
+     * @param  int $status
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondWithToken($token, $message = 'Success', $status = 200)
+    {
+        return response()->json([
+            'message' => $message,
+            'user' => auth('api')->user(),
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60
+        ], $status);
     }
 }

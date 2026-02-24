@@ -40,10 +40,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'apiRegister'])->name('api.register.post');
 });
 
-Route::post('/logout', [AuthController::class, 'apiLogout'])->name('api.logout')->middleware('auth:sanctum');
+Route::post('/logout', [AuthController::class, 'apiLogout'])->name('api.logout')->middleware('auth:api');
 
 // Cart routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('api.cart.index');
     Route::post('/cart', [CartController::class, 'store'])->name('api.cart.store');
     Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('api.cart.update');
