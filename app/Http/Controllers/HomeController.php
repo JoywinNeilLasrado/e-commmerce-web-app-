@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $featuredProducts = Product::with(['phoneModel.brand', 'variants'])
             ->where('is_active', true)
@@ -20,6 +20,13 @@ class HomeController extends Controller
         $brands = Brand::where('is_active', true)
             ->where('is_featured', true)
             ->get();
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'featuredProducts' => $featuredProducts,
+                'brands' => $brands
+            ]);
+        }
 
         return view('home', compact('featuredProducts', 'brands'));
     }

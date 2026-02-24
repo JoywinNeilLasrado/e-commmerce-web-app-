@@ -9,13 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $products = Auth::user()->wishlistProducts()
             ->with(['phoneModel.brand', 'variants.condition'])
             ->latest()
             ->get();
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Wishlist viewed Successfully',
+                'products' => $products
+            ]);
+        }
         return view('wishlist.index', compact('products'));
     }
 
@@ -41,6 +48,8 @@ class WishlistController extends Controller
                 'count' => $user->wishlists()->count()
             ]);
         }
+
+        
 
         return back()->with('success', $message);
     }

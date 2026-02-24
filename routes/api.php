@@ -31,7 +31,6 @@ Route::get('/products', [ProductController::class, 'index'])->name('api.products
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('api.products.show');
 Route::get('/compare', [\App\Http\Controllers\CompareController::class, 'index'])->name('api.compare.index');
 Route::get('/sell', [\App\Http\Controllers\SellController::class, 'index'])->name('api.sell');
-
 // PayU Response (Public to handle callbacks without session)
 Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'])->name('api.payment.payu.response');
 

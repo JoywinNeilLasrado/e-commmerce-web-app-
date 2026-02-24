@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class CheckoutController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $cart = Cart::with(['items.productVariant.product', 'items.productVariant.condition'])
@@ -26,6 +26,15 @@ class CheckoutController extends Controller
         }
 
         $addresses = $user->addresses;
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Checkout viewed Successfully',
+                'cart' => $cart,
+                'addresses' => $addresses
+            ]);
+        }
 
         return view('checkout.index', compact('cart', 'addresses'));
     }
@@ -105,6 +114,27 @@ class CheckoutController extends Controller
 
                 $payuUrl = config('services.payu.test_mode') ? 'https://test.payu.in/_payment' : 'https://secure.payu.in/_payment';
 
+                if ($request->routeIs('api.*') || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'PayU transaction initiated.',
+                        'payment_parameters' => [
+                            'key' => $key,
+                            'txnid' => $txnid,
+                            'amount' => (string)$amount,
+                            'productinfo' => $productinfo,
+                            'firstname' => $firstname,
+                            'email' => $email,
+                            'phone' => $phone,
+                            'surl' => $surl,
+                            'furl' => $furl,
+                            'hash' => $hash,
+                            'payuUrl' => $payuUrl,
+                        ],
+                        'order' => $order
+                    ]);
+                }
+
                 return view('payment.payu_redirect', compact('key', 'txnid', 'amount', 'productinfo', 'firstname', 'email', 'phone', 'surl', 'furl', 'hash', 'payuUrl'));
             }
 
@@ -132,13 +162,83 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order placed successfully!',
+                    'order' => $order->load(['items', 'address'])
+                ]);
+            }
+
             return redirect()->route('orders.show', $order)->with('success', 'Order placed successfully!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // dd(explode('(SQL:', $e->getMessage())[0]); // Debugging
+            
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to place order. ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Failed to place order. Please try again. ' . $e->getMessage());
         }
+    }
+
+    public function payuInitiate(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        $user = Auth::user();
+        $order = Order::where('id', $request->order_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This order cannot be paid for in its current status.'
+            ], 422);
+        }
+
+        // PayU Configuration
+        $key = config('services.payu.key');
+        $salt = config('services.payu.salt');
+        $txnid = $order->order_number;
+        $amount = $order->total;
+        $productinfo = 'Order #' . $order->order_number;
+        $firstname = $user->name;
+        $email = $user->email;
+        $phone = $order->address->phone ?? '9999999999';
+        $surl = route('api.payment.payu.response'); // Use API response route
+        $furl = route('api.payment.payu.response');
+        
+        $hashSequence = "$key|$txnid|$amount|$productinfo|$firstname|$email|||||||||||$salt";
+        $hash = strtolower(hash('sha512', $hashSequence));
+
+        $payuUrl = config('services.payu.test_mode') ? 'https://test.payu.in/_payment' : 'https://secure.payu.in/_payment';
+
+        return response()->json([
+            'success' => true,
+            'message' => 'PayU transaction parameters generated.',
+            'payment_parameters' => [
+                'key' => $key,
+                'txnid' => $txnid,
+                'amount' => (string)$amount,
+                'productinfo' => $productinfo,
+                'firstname' => $firstname,
+                'email' => $email,
+                'phone' => $phone,
+                'surl' => $surl,
+                'furl' => $furl,
+                'hash' => $hash,
+                'payuUrl' => $payuUrl,
+            ],
+            'order' => $order
+        ]);
     }
 
     public function payuResponse(Request $request)

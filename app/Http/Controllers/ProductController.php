@@ -58,10 +58,18 @@ class ProductController extends Controller
         $products = $query->paginate(12);
         $brands = Brand::where('is_active', true)->get();
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'product page communicated successfully',
+                'products' => $products,
+                'brands' => $brands
+            ]);
+        }
+
         return view('products.index', compact('products', 'brands'));
     }
 
-    public function show($slug)
+    public function show($slug, Request $request)
     {
         $product = Product::with(['phoneModel.brand', 'images', 'variants.condition', 'reviews.user'])
             ->withCount('reviews')
@@ -78,8 +86,18 @@ class ProductController extends Controller
             ->get();
 
         $userReview = null;
-        if (auth()->check()) {
+        if (!$request->routeIs('api.*') && auth()->check()) {
             $userReview = $product->reviews()->where('user_id', auth()->id())->first();
+        } elseif ($request->routeIs('api.*') && auth('sanctum')->check()) {
+            $userReview = $product->reviews()->where('user_id', auth('sanctum')->id())->first();
+        }
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'product' => $product,
+                'relatedProducts' => $relatedProducts,
+                'userReview' => $userReview
+            ]);
         }
 
         return view('products.show', compact('product', 'relatedProducts', 'userReview'));

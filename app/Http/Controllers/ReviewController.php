@@ -32,6 +32,14 @@ class ReviewController extends Controller
             'is_approved' => true, // Auto-approve
         ]);
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Review added successfully',
+                'review' => $review
+            ]);
+        }
+
         return back()->with('success', 'Thank you for your review!');
     }
 

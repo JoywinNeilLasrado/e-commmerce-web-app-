@@ -33,6 +33,14 @@ class CompareController extends Controller
             ->orderBy('title')
             ->get();
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'compareProducts' => $compareProducts,
+                'allProducts' => $allProducts,
+                'ids' => $ids
+            ]);
+        }
+
         return view('compare.index', compact('compareProducts', 'allProducts', 'ids'));
     }
 }

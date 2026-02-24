@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $cart = Cart::with(['items.productVariant.product', 'items.productVariant.condition'])
             ->firstOrCreate(['user_id' => Auth::id()]);
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart viewed Successfully',
+                'cart' => $cart
+            ]);
+        }
         return view('cart.index', compact('cart'));
     }
 
@@ -30,6 +37,12 @@ class CartController extends Controller
         $variant = ProductVariant::find($request->variant_id);
 
         if (!$variant->is_available || $variant->stock < $request->quantity) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product not available in requested quantity.'
+                ], 422);
+            }
             return back()->with('error', 'Product not available in requested quantity.');
         }
 
@@ -43,6 +56,14 @@ class CartController extends Controller
                 'product_variant_id' => $variant->id,
                 'quantity' => $request->quantity,
                 'price' => $variant->price,
+            ]);
+        }
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Item added to cart.',
+                'cart_item' => $cartItem ?? $cart->items()->where('product_variant_id', $variant->id)->latest()->first()
             ]);
         }
 
@@ -66,10 +87,24 @@ class CartController extends Controller
         $variant = $cartItem->productVariant;
 
         if ($variant->stock < $request->quantity) {
+             if ($request->routeIs('api.*') || $request->wantsJson()) {
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Requested quantity exceeds stock.'
+                 ], 422);
+             }
              return back()->with('error', 'Requested quantity exceeds stock.');
         }
 
         $cartItem->update(['quantity' => $request->quantity]);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated.',
+                'cart_item' => $cartItem->fresh(['productVariant.product', 'productVariant.condition'])
+            ]);
+        }
 
         return back()->with('success', 'Cart updated.');
     }
@@ -81,6 +116,13 @@ class CartController extends Controller
         }
 
         $cartItem->delete();
+
+        if (request()->routeIs('api.*') || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Item removed from cart.'
+            ]);
+        }
 
         return back()->with('success', 'Item removed from cart.');
     }
