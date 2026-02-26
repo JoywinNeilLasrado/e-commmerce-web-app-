@@ -99,6 +99,16 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = auth('api')->user();
+        
+        // Prevent Admins from logging into the customer-facing mobile application
+        if ($user->hasRole('admin') || $user->role === 'admin') {
+            auth('api')->logout();
+            return response()->json([
+                'message' => 'Access denied. Admins cannot log into the customer mobile application.'
+            ], 403);
+        }
+
         return $this->respondWithToken($token, 'Login successful via API');
     }
 
@@ -133,6 +143,20 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out successfully via API'
         ], 200);
+    }
+
+    public function apiRefresh(Request $request)
+    {
+        // The middleware auth:api will ensure only requests with valid (but potentially expiring soon) 
+        // tokens can reach this method.
+        try {
+            // This invalidates the current token and generates a new one.
+            $newToken = auth('api')->refresh();
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['message' => 'Token is invalid'], 401);
+        }
+
+        return $this->respondWithToken($newToken, 'Token refreshed successfully');
     }
 
     /**

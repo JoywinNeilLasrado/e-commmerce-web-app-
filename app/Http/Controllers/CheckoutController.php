@@ -22,6 +22,12 @@ class CheckoutController extends Controller
             ->firstOrCreate(['user_id' => $user->id]);
 
         if ($cart->items->count() === 0) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your cart is empty.'
+                ], 400);
+            }
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
@@ -42,20 +48,39 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'address_id' => 'required|exists:addresses,id',
+            'address_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('addresses', 'id')->where(function ($query) {
+                    return $query->where('user_id', Auth::id());
+                }),
+            ],
             'payment_method' => 'required|in:cod,payu',
+        ], [
+            'address_id.exists' => 'The selected address is invalid or does not belong to you.',
         ]);
 
         $user = Auth::user();
         $cart = Cart::with('items.productVariant')->where('user_id', $user->id)->firstOrFail();
 
         if ($cart->items->count() === 0) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your cart is empty.'
+                ], 400);
+            }
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
         // Check stock one last time
         foreach ($cart->items as $item) {
             if ($item->productVariant->stock < $item->quantity) {
+                 if ($request->routeIs('api.*') || $request->wantsJson()) {
+                     return response()->json([
+                         'success' => false,
+                         'message' => 'Some items in your cart are no longer available in the requested quantity.'
+                     ], 400);
+                 }
                  return back()->with('error', 'Some items in your cart are no longer available in the requested quantity.');
             }
         }
@@ -260,7 +285,17 @@ class CheckoutController extends Controller
         
         $order = Order::where('order_number', $txnid)->first();
         if (!$order) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found.'
+                ], 404);
+            }
             return redirect()->route('cart.index')->with('error', 'Order not found.');
+        }
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            // TEMPORARY TESTING ONLY: Print the correct hash so we can copy it into Postman
+            // return response()->json(['correct_hash_to_use' => $hash]);
         }
 
         if ($hash != $posted_hash) {
@@ -270,6 +305,13 @@ class CheckoutController extends Controller
                 }
                 $order->update(['status' => 'cancelled']);
             });
+            
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid payment response. Please try again.'
+                ], 400);
+            }
             return redirect()->route('checkout.index')->with('error', 'Invalid payment response. Please try again.');
         }
 
@@ -313,6 +355,14 @@ class CheckoutController extends Controller
                 $c->items()->delete();
             }
 
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment successful! Your order has been placed.',
+                    'order' => $order->load(['items', 'address', 'payment'])
+                ]);
+            }
+
             return redirect()->route('orders.show', $order)->with('success', 'Payment successful! Your order has been placed.');
         } else {
             // Payment Failed
@@ -335,6 +385,13 @@ class CheckoutController extends Controller
                 }
                 $order->update(['status' => 'cancelled']);
             });
+            
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment failed: ' . ($request->error_Message ?? 'Please try again.')
+                ], 400);
+            }
             
             return redirect()->route('checkout.index')->with('error', 'Payment failed: ' . ($request->error_Message ?? 'Please try again.'));
         }

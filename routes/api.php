@@ -41,6 +41,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'apiLogout'])->name('api.logout')->middleware('auth:api');
+Route::post('/refresh', [AuthController::class, 'apiRefresh'])->name('api.refresh')->middleware('auth:api');
 
 // Cart routes
 Route::middleware('auth:api')->group(function () {
@@ -69,7 +70,7 @@ Route::middleware('auth:api')->group(function () {
 });
 
 // Admin Dashboard Routes
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('api.admin.')->group(function () {
+/*Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('api.admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::apiResource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::apiResource('brands', \App\Http\Controllers\Admin\BrandController::class);
@@ -81,17 +82,19 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('api.ad
     Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
     Route::apiResource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'update', 'destroy']);
-});
+}); */
 
 // Profile Routes
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('api.profile.edit');
-    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('api.profile.update');
-    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('api.profile.password');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('api.profile.update');
+    Route::patch('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('api.profile.password');
     Route::post('/profile/address', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('api.profile.address.store');
+    Route::patch('/profile/address/{address}', [\App\Http\Controllers\ProfileController::class, 'updateAddress'])->name('api.profile.address.update');
+    
     Route::delete('/profile/address/{address}', [\App\Http\Controllers\ProfileController::class, 'destroyAddress'])->name('api.profile.address.destroy');
     
     // Reviews
     Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('api.reviews.store');
-    Route::put('/reviews/{review}', [\App\Http\Controllers\ReviewController::class, 'update'])->name('api.reviews.update');
+    Route::patch('/reviews/{review}', [\App\Http\Controllers\ReviewController::class, 'update'])->name('api.reviews.update');
 });

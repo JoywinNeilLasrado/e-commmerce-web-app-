@@ -11,9 +11,16 @@ use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
-    public function edit()
+    public function edit(Request $request)
     {
         $user = auth()->user()->load('addresses');
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'user' => $user
+            ]);
+        }
+
         return view('profile.edit', compact('user'));
     }
 
@@ -25,6 +32,13 @@ class ProfileController extends Controller
         ]);
 
         auth()->user()->update($validated);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Profile updated successfully.',
+                'user' => auth()->user()
+            ]);
+        }
 
         return back()->with('success', 'Profile updated successfully.');
     }
@@ -39,6 +53,13 @@ class ProfileController extends Controller
         auth()->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Password updated successfully.',
+                'user' => auth()->user()
+            ]);
+        }
 
         return back()->with('success', 'Password updated successfully.');
     }
@@ -68,9 +89,55 @@ class ProfileController extends Controller
             $validated['is_default'] = false;
         }
 
-        auth()->user()->addresses()->create($validated);
+        $address = auth()->user()->addresses()->create($validated);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Address added successfully.',
+                'address' => $address
+            ]);
+        }
 
         return back()->with('success', 'Address added successfully.');
+    }
+
+    public function updateAddress(Request $request, Address $address)
+    {
+        if ($address->user_id !== auth()->id()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'label' => ['nullable', 'string', 'max:255'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'address_line_1' => ['required', 'string', 'max:255'],
+            'address_line_2' => ['nullable', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:20'],
+            'country' => ['required', 'string', 'max:255'],
+            'is_default' => ['sometimes', 'boolean'],
+        ]);
+
+        if ($request->has('is_default') && $request->is_default) {
+            auth()->user()->addresses()->where('id', '!=', $address->id)->update(['is_default' => false]);
+            $validated['is_default'] = true;
+        }
+
+        $address->update($validated);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Address updated successfully.',
+                'address' => $address
+            ]);
+        }
+
+        return back()->with('success', 'Address updated successfully.');
     }
 
     public function destroyAddress(Address $address)
@@ -87,6 +154,10 @@ class ProfileController extends Controller
             if ($newDefault) {
                 $newDefault->update(['is_default' => true]);
             }
+        }
+
+        if (request()->routeIs('api.*') || request()->wantsJson()) {
+            return response()->json(['message' => 'Address deleted successfully.']);
         }
 
         return back()->with('success', 'Address deleted successfully.');

@@ -12,19 +12,37 @@ use App\Services\PayUService;
 class OrderController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $orders = Auth::user()->orders()->with(['items.productVariant.product', 'payment'])->latest()->paginate(10);
+        
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'orders' => $orders
+            ]);
+        }
+
         return view('orders.index', compact('orders'));
     }
 
-    public function show(Order $order)
+    public function show(Request $request, Order $order)
     {
         if ($order->user_id !== Auth::id()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
             abort(403);
         }
 
         $order->load(['items.productVariant.product.reviews', 'items.productVariant.condition', 'payment', 'address']);
+
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'order' => $order
+            ]);
+        }
 
         return view('orders.show', compact('order'));
     }
@@ -32,11 +50,20 @@ class OrderController extends Controller
     public function cancel(Order $order, PayUService $payUService)
     {
         if ($order->user_id !== Auth::id()) {
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
             abort(403);
         }
 
         // Only allow cancellation if order is pending or processing
         if (!in_array($order->status, ['pending', 'processing'])) {
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This order cannot be cancelled as it is already ' . $order->status . '.'
+                ], 400);
+            }
             return back()->with('error', 'This order cannot be cancelled as it is already ' . $order->status . '.');
         }
 
@@ -77,6 +104,12 @@ class OrderController extends Controller
 
             if (!$refundStatus) {
                 DB::rollBack();
+                if (request()->routeIs('api.*') || request()->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $refundMessage
+                    ], 400);
+                }
                 return back()->with('error', $refundMessage);
             }
 
@@ -89,11 +122,26 @@ class OrderController extends Controller
 
             DB::commit();
 
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $refundMessage,
+                    'order' => $order
+                ]);
+            }
+
             return redirect()->route('orders.show', $order)->with('success', $refundMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Order Cancellation Error: ' . $e->getMessage());
+            
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while cancelling your order. Please try again.'
+                ], 500);
+            }
             return back()->with('error', 'An error occurred while cancelling your order. Please try again.');
         }
     }
