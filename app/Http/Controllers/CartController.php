@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\ProductVariant;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +13,7 @@ class CartController extends Controller
 
     public function index(Request $request)
     {
-        $cart = Cart::with(['items.productVariant.product', 'items.productVariant.condition'])
+        $cart = Cart::with(['items.product.condition', 'items.product.phoneModel.brand'])
             ->firstOrCreate(['user_id' => Auth::id()]);
 
         if ($request->routeIs('api.*') || $request->wantsJson()) {
@@ -29,14 +29,14 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'variant_id' => 'required|exists:product_variants,id',
+            'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-        $variant = ProductVariant::find($request->variant_id);
+        $product = Product::find($request->product_id);
 
-        if (!$variant->is_available || $variant->stock < $request->quantity) {
+        if (!$product->is_available || $product->stock < $request->quantity) {
             if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -46,16 +46,16 @@ class CartController extends Controller
             return back()->with('error', 'Product not available in requested quantity.');
         }
 
-        $cartItem = $cart->items()->where('product_variant_id', $variant->id)->first();
+        $cartItem = $cart->items()->where('product_id', $product->id)->first();
 
         if ($cartItem) {
             $cartItem->quantity += $request->quantity;
             $cartItem->save();
         } else {
             $cart->items()->create([
-                'product_variant_id' => $variant->id,
+                'product_id' => $product->id,
                 'quantity' => $request->quantity,
-                'price' => $variant->price,
+                'price' => $product->price,
             ]);
         }
 
@@ -63,7 +63,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Item added to cart.',
-                'cart_item' => $cartItem ?? $cart->items()->where('product_variant_id', $variant->id)->latest()->first()
+                'cart_item' => $cartItem ?? $cart->items()->where('product_id', $product->id)->latest()->first()
             ]);
         }
 
@@ -84,9 +84,9 @@ class CartController extends Controller
             abort(403);
         }
 
-        $variant = $cartItem->productVariant;
+        $product = $cartItem->product;
 
-        if ($variant->stock < $request->quantity) {
+        if ($product->stock < $request->quantity) {
              if ($request->routeIs('api.*') || $request->wantsJson()) {
                  return response()->json([
                      'success' => false,
@@ -102,7 +102,7 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cart updated.',
-                'cart_item' => $cartItem->fresh(['productVariant.product', 'productVariant.condition'])
+                'cart_item' => $cartItem->fresh(['product.condition'])
             ]);
         }
 

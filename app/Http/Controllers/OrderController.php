@@ -14,7 +14,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $orders = Auth::user()->orders()->with(['items.productVariant.product', 'payment'])->latest()->paginate(10);
+        $orders = Auth::user()->orders()->with(['items.product', 'payment'])->latest()->paginate(10);
         
         if ($request->routeIs('api.*') || $request->wantsJson()) {
             return response()->json([
@@ -35,7 +35,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load(['items.productVariant.product.reviews', 'items.productVariant.condition', 'payment', 'address']);
+        $order->load(['items.product.reviews', 'items.product.condition', 'payment', 'address']);
 
         if ($request->routeIs('api.*') || $request->wantsJson()) {
             return response()->json([
@@ -115,7 +115,7 @@ class OrderController extends Controller
 
             // Restore Stock
             foreach ($order->items as $item) {
-                $item->productVariant->increment('stock', $item->quantity);
+                $item->product->increment('stock', $item->quantity);
             }
 
             $order->update(['status' => 'cancelled']);

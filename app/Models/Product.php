@@ -17,12 +17,19 @@ class Product extends Model
 
     protected $fillable = [
         'phone_model_id',
+        'condition_id',
         'title',
         'slug',
         'description',
         'primary_image',
         'base_price',
         'original_price',
+        'storage',
+        'color',
+        'price',
+        'stock',
+        'sku',
+        'is_available',
         'imei',
         'warranty_months',
         'whats_in_box',
@@ -35,8 +42,10 @@ class Product extends Model
     protected $casts = [
         'base_price' => 'decimal:2',
         'original_price' => 'decimal:2',
+        'price' => 'decimal:2',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'is_available' => 'boolean',
         'published_at' => 'datetime',
     ];
 
@@ -45,14 +54,14 @@ class Product extends Model
         return $this->belongsTo(PhoneModel::class);
     }
 
+    public function condition(): BelongsTo
+    {
+        return $this->belongsTo(Condition::class);
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
-    }
-
-    public function variants(): HasMany
-    {
-        return $this->hasMany(ProductVariant::class);
     }
 
     public function reviews(): HasMany
@@ -76,16 +85,19 @@ class Product extends Model
         return $this->wishlists()->where('user_id', auth()->id())->exists();
     }
 
-    // Get available variants only
-    public function availableVariants(): HasMany
+    // Check if in stock
+    public function inStock(): bool
     {
-        return $this->variants()->where('is_available', true)->where('stock', '>', 0);
+        return $this->stock > 0 && $this->is_available;
     }
 
-    // Get minimum price from variants
-    public function getMinPriceAttribute()
+    // Get discount percentage
+    public function getDiscountPercentageAttribute()
     {
-        return $this->variants()->min('price');
+        if ($this->original_price && $this->original_price > $this->price) {
+            return round(( ($this->original_price - $this->price) / $this->original_price) * 100);
+        }
+        return 0;
     }
 
     // Get average rating

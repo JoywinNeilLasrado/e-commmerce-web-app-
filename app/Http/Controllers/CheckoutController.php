@@ -18,7 +18,7 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $cart = Cart::with(['items.productVariant.product', 'items.productVariant.condition'])
+        $cart = Cart::with(['items.product.condition', 'items.product.phoneModel.brand'])
             ->firstOrCreate(['user_id' => $user->id]);
 
         if ($cart->items->count() === 0) {
@@ -60,7 +60,7 @@ class CheckoutController extends Controller
         ]);
 
         $user = Auth::user();
-        $cart = Cart::with('items.productVariant')->where('user_id', $user->id)->firstOrFail();
+        $cart = Cart::with('items.product')->where('user_id', $user->id)->firstOrFail();
 
         if ($cart->items->count() === 0) {
             if ($request->routeIs('api.*') || $request->wantsJson()) {
@@ -74,7 +74,7 @@ class CheckoutController extends Controller
 
         // Check stock one last time
         foreach ($cart->items as $item) {
-            if ($item->productVariant->stock < $item->quantity) {
+            if ($item->product->stock < $item->quantity) {
                  if ($request->routeIs('api.*') || $request->wantsJson()) {
                      return response()->json([
                          'success' => false,
@@ -102,29 +102,29 @@ class CheckoutController extends Controller
             foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_variant_id' => $item->product_variant_id,
+                    'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
                     'price' => $item->price,
                     'subtotal' => $item->price * $item->quantity,
-                    'phone_title' => $item->productVariant->product->title,
-                    'storage' => $item->productVariant->storage,
-                    'color' => $item->productVariant->color,
-                    'condition' => $item->productVariant->condition->name,
+                    'phone_title' => $item->product->title,
+                    'storage' => $item->product->storage,
+                    'color' => $item->product->color,
+                    'condition' => $item->product->condition->name ?? 'Refurbished',
                 ]);
 
                 // Decrease stock
-                $item->productVariant->decrement('stock', $item->quantity);
+                $item->product->decrement('stock', $item->quantity);
             }
             // Payment Processing
 
             if ($request->payment_method === 'payu') {
-                $order->update(['status' => 'pending']); // Ensure status is pending
-                DB::commit(); // Commit transaction before redirecting
+                $order->update(['status' => 'pending']);
+                DB::commit();
 
                 // PayU Configuration
                 $key = config('services.payu.key');
                 $salt = config('services.payu.salt');
-                $txnid = $order->order_number; // Use Order Number as Transaction ID
+                $txnid = $order->order_number;
                 $amount = $order->total;
                 $productinfo = 'Order #' . $order->order_number;
                 $firstname = $user->name;
@@ -133,7 +133,6 @@ class CheckoutController extends Controller
                 $surl = route('payment.payu.response');
                 $furl = route('payment.payu.response');
                 
-                // Hash Sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|...|udf10|salt
                 $hashSequence = "$key|$txnid|$amount|$productinfo|$firstname|$email|||||||||||$salt";
                 $hash = strtolower(hash('sha512', $hashSequence));
 
@@ -176,7 +175,7 @@ class CheckoutController extends Controller
 
             if ($paymentStatus === 'completed' || $request->payment_method === 'cod') {
                 $order->update([
-                    'status' => 'processing', // Auto-process COD orders
+                    'status' => 'processing',
                     'payment_status' => $paymentStatus === 'completed' ? 'paid' : 'pending',
                     'paid_at' => $paymentStatus === 'completed' ? now() : null,
                 ]);
@@ -238,7 +237,7 @@ class CheckoutController extends Controller
         $firstname = $user->name;
         $email = $user->email;
         $phone = $order->address->phone ?? '9999999999';
-        $surl = route('api.payment.payu.response'); // Use API response route
+        $surl = route('api.payment.payu.response');
         $furl = route('api.payment.payu.response');
         
         $hashSequence = "$key|$txnid|$amount|$productinfo|$firstname|$email|||||||||||$salt";
@@ -279,7 +278,6 @@ class CheckoutController extends Controller
         $productinfo = $request->productinfo;
         $email = $request->email;
         
-        // Response Hash Sequence: salt|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
         $retHashSeq = "$salt|$status|||||||||||$email|$firstname|$productinfo|$amount|$txnid|$key";
         $hash = strtolower(hash('sha512', $retHashSeq));
         
@@ -293,15 +291,13 @@ class CheckoutController extends Controller
             }
             return redirect()->route('cart.index')->with('error', 'Order not found.');
         }
-        if ($request->routeIs('api.*') || $request->wantsJson()) {
-            // TEMPORARY TESTING ONLY: Print the correct hash so we can copy it into Postman
-            // return response()->json(['correct_hash_to_use' => $hash]);
-        }
 
         if ($hash != $posted_hash) {
             DB::transaction(function () use ($order) {
                 foreach ($order->items as $item) {
-                    $item->productVariant->increment('stock', $item->quantity);
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
                 }
                 $order->update(['status' => 'cancelled']);
             });
@@ -333,7 +329,7 @@ class CheckoutController extends Controller
                     'mode' => $request->mode,
                     'bankcode' => $request->bankcode,
                     'card_type' => $request->card_type,
-                    'network_type' => $request->network_type, // Capturing specific network type as identified by user
+                    'network_type' => $request->network_type,
                     'name_on_card' => $request->name_on_card,
                     'issuing_bank' => $request->issuing_bank,
                     'upi_va' => $request->field4, 
@@ -349,7 +345,7 @@ class CheckoutController extends Controller
                 'paid_at' => now(),
             ]);
 
-            // Clear Cart (Handle potential multiple carts)
+            // Clear Cart
             $carts = Cart::where('user_id', $order->user_id)->get();
             foreach ($carts as $c) {
                 $c->items()->delete();
@@ -381,7 +377,9 @@ class CheckoutController extends Controller
             // Restore Stock and Cancel Order
             DB::transaction(function () use ($order) {
                 foreach ($order->items as $item) {
-                    $item->productVariant->increment('stock', $item->quantity);
+                    if ($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
                 }
                 $order->update(['status' => 'cancelled']);
             });

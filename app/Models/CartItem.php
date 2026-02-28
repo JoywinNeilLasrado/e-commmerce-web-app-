@@ -9,7 +9,7 @@ class CartItem extends Model
 {
     protected $fillable = [
         'cart_id',
-        'product_variant_id',
+        'product_id',
         'quantity',
         'price'
     ];
@@ -23,9 +23,9 @@ class CartItem extends Model
         return $this->belongsTo(Cart::class);
     }
 
-    public function productVariant(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(Product::class);
     }
 
     // Get subtotal for this item

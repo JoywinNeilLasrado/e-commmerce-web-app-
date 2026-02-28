@@ -9,7 +9,7 @@
 
         <!-- Condition Badge -->
         <div class="absolute top-3 left-3">
-            @php $condition = $product->variants->first()?->condition?->name ?? 'Refurbished'; @endphp
+            @php $condition = $product->condition->name ?? 'Refurbished'; @endphp
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
                 @if($condition === 'Excellent') bg-emerald-50 text-emerald-700 border border-emerald-200
                 @elseif($condition === 'Good') bg-blue-50 text-blue-700 border border-blue-200
@@ -41,6 +41,14 @@
             <h3 class="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
                 <a href="{{ route('products.show', $product->slug) }}">{{ $product->title }}</a>
             </h3>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+                @if($product->storage)
+                    <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ $product->storage }}</span>
+                @endif
+                @if($product->color)
+                    <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ $product->color }}</span>
+                @endif
+            </div>
         </div>
 
         <!-- Rating -->
@@ -58,12 +66,9 @@
         <!-- Price + CTA -->
         <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
             <div>
-                <span class="text-xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</span>
-                @php 
-                    $originalPrice = $product->variants->first()?->original_price ?? $product->original_price;
-                @endphp
-                @if($originalPrice > $product->base_price)
-                    <span class="block text-xs text-gray-400 line-through">₹{{ number_format($originalPrice, 0) }}</span>
+                <span class="text-xl font-black text-gray-900">₹{{ number_format($product->price, 0) }}</span>
+                @if($product->original_price > $product->price)
+                    <span class="block text-xs text-gray-400 line-through">₹{{ number_format($product->original_price, 0) }}</span>
                 @endif
             </div>
             <div class="flex items-center gap-2">

@@ -12,9 +12,8 @@
             <span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono border border-blue-100">{{ $product->phoneModel->name }}</span>
         </div>
         <div class="flex items-center gap-2">
-             <a href="{{ route('admin.products.variants.index', $product) }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                Variants
+            <a href="{{ route('admin.products.index') }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors">
+                ← Back
             </a>
             <button type="submit" form="product-form" class="bg-gray-900 text-white text-xs font-medium px-5 py-2 rounded-lg hover:bg-gray-800 transition-colors shadow-sm flex items-center gap-2">
                 Save
@@ -85,7 +84,7 @@
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Base Price</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Price</label>
                                 <div class="relative rounded-md shadow-sm">
                                     <span class="absolute left-3 top-1.5 text-gray-400 text-sm">₹</span>
                                     <input type="number" name="base_price" value="{{ old('base_price', $product->base_price) }}" required min="0" step="0.01"
@@ -102,7 +101,7 @@
                                 </div>
                             </div>
 
-                            <div class="pt-3 flex gap-4">
+                            <div class="pt-3 flex gap-4 flex-wrap">
                                 <label class="inline-flex items-center cursor-pointer group">
                                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
                                     <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Active</span>
@@ -110,6 +109,10 @@
                                 <label class="inline-flex items-center cursor-pointer group">
                                     <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $product->is_featured) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
                                     <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Featured</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer group">
+                                    <input type="checkbox" name="is_available" value="1" {{ old('is_available', $product->is_available) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
+                                    <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Available</span>
                                 </label>
                             </div>
                         </div>
@@ -126,7 +129,6 @@
                             <img src="{{ $product->primary_image_url }}" 
                                  class="max-w-full max-h-full object-contain p-2 pointer-events-none">
                             
-                            <!-- Hover overlay -->
                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center pointer-events-none">
                                 <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30 flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-2.828 1.172H7v-2a4 4 0 011.172-2.828z"/></svg>
@@ -134,7 +136,6 @@
                                 </span>
                             </div>
                             
-                            <!-- File input ON TOP (z-10) to ensure its clickable -->
                             <input type="file" name="primary_image" accept="image/*" 
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                                    onchange="previewPrimaryImage(this)">
@@ -151,7 +152,6 @@
                                     </button>
                                 </div>
                             @endforeach
-                            <!-- This will hold previews for all newly selected images -->
                             <div id="new-previews" class="contents"></div>
 
                             <div id="gallery-input-wrapper" class="relative aspect-square rounded border border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center justify-center cursor-pointer group bg-gray-50/50">
@@ -164,8 +164,50 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Specs (col-span-4) -->
+                <!-- Right Column: Details (col-span-4) -->
                 <div class="lg:col-span-4 space-y-4">
+                    <!-- Product Details -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Product Details</h2>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Storage</label>
+                                    <input type="text" name="storage" value="{{ old('storage', $product->storage) }}" required placeholder="e.g. 128GB"
+                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Color</label>
+                                    <input type="text" name="color" value="{{ old('color', $product->color) }}" required placeholder="e.g. Blue"
+                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Condition</label>
+                                <select name="condition_id" required class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                    <option value="">Select Condition</option>
+                                    @foreach($conditions as $condition)
+                                        <option value="{{ $condition->id }}" {{ old('condition_id', $product->condition_id) == $condition->id ? 'selected' : '' }}>{{ $condition->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Stock</label>
+                                    <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" required min="0"
+                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">SKU</label>
+                                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" required
+                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
                         <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Technical Details</h2>
                         <div class="space-y-4">
@@ -208,7 +250,6 @@
 </form>
 
 <script>
-    // Live preview when a new primary image is selected
     function previewPrimaryImage(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -221,14 +262,12 @@
         }
     }
 
-    // Live preview for multiple gallery images (Cumulative)
     function previewGalleryImages(input) {
         const previewContainer = document.getElementById('new-previews');
         const hiddenContainer = document.getElementById('hidden-inputs-container');
         const wrapper = document.getElementById('gallery-input-wrapper');
         
         if (input.files && input.files.length > 0) {
-            // 1. Render Previews for these files
             Array.from(input.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -246,12 +285,10 @@
                 reader.readAsDataURL(file);
             });
 
-            // 2. Move this input to hidden container (so it stays in form)
-            input.onchange = null; // Prevent recursion
+            input.onchange = null;
             input.classList.add('hidden');
             hiddenContainer.appendChild(input);
 
-            // 3. Create a fresh input for the next selection
             const nextInput = document.createElement('input');
             nextInput.type = 'file';
             nextInput.name = 'product_images[]';
@@ -272,10 +309,8 @@
     }
 
     function selectBrand(brandId) {
-        // 1. Update Hidden Input
         document.getElementById('hidden_brand_id').value = brandId;
 
-        // 2. Update UI (active state on buttons)
         document.querySelectorAll('.brand-btn').forEach(btn => {
             if (btn.dataset.brandBtn === brandId) {
                 btn.classList.add('border-blue-600', 'bg-blue-50/50', 'shadow-sm');
@@ -284,7 +319,6 @@
                 btn.querySelector('span').classList.add('text-blue-700');
                 btn.querySelector('span').classList.remove('text-gray-400');
                 
-                // Add Checkmark if not already there
                 if (!btn.querySelector('.absolute')) {
                     const check = document.createElement('div');
                     check.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-sm';
@@ -298,17 +332,15 @@
                 btn.querySelector('span').classList.remove('text-blue-700');
                 btn.querySelector('span').classList.add('text-gray-400');
                 
-                // Remove Checkmark
                 const check = btn.querySelector('.absolute');
                 if (check) check.remove();
             }
         });
 
-        // 3. Filter Models
         const modelSelect = document.getElementById('phone_model_id');
         const optgroups = modelSelect.querySelectorAll('optgroup');
         
-        modelSelect.value = ''; // Reset selection
+        modelSelect.value = '';
 
         optgroups.forEach(group => {
             if (group.dataset.brand === brandId) {

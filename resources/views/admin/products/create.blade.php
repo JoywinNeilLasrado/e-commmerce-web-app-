@@ -78,14 +78,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700">Product Title</label>
-                        <input type="text" name="title" id="title" value="{{ old('title') }}" required placeholder="e.g. iPhone 13 Pro (Refurbished)" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                        <input type="text" name="title" id="title" value="{{ old('title') }}" required placeholder="e.g. iPhone 13 Pro 128GB Blue (Excellent)" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
                         @error('title')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="base_price" class="block text-sm font-medium text-gray-700">Base Price (₹)</label>
+                        <label for="base_price" class="block text-sm font-medium text-gray-700">Price (₹)</label>
                         <input type="number" name="base_price" id="base_price" value="{{ old('base_price') }}" required min="0" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
                         @error('base_price')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -98,6 +98,57 @@
                         @error('original_price')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+                </div>
+
+                <!-- Variant Details (Storage, Color, Condition, Stock, SKU) -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-sm font-bold text-gray-900 mb-4">Product Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="storage" class="block text-sm font-medium text-gray-700">Storage</label>
+                            <input type="text" name="storage" id="storage" value="{{ old('storage') }}" required placeholder="e.g. 128GB" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                            @error('storage')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
+                            <input type="text" name="color" id="color" value="{{ old('color') }}" required placeholder="e.g. Blue" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                            @error('color')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="condition_id" class="block text-sm font-medium text-gray-700">Condition</label>
+                            <select name="condition_id" id="condition_id" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                                <option value="">Select Condition</option>
+                                @foreach($conditions as $condition)
+                                    <option value="{{ $condition->id }}" {{ old('condition_id') == $condition->id ? 'selected' : '' }}>{{ $condition->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('condition_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="stock" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                            <input type="number" name="stock" id="stock" value="{{ old('stock', 1) }}" required min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                            @error('stock')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="sku" class="block text-sm font-medium text-gray-700">SKU</label>
+                            <input type="text" name="sku" id="sku" value="{{ old('sku') }}" required placeholder="e.g. IP13P-128-BLU-EXC" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                            @error('sku')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -141,6 +192,13 @@
                             Featured Product
                         </label>
                     </div>
+
+                    <div class="flex items-center">
+                        <input id="is_available" name="is_available" type="checkbox" value="1" {{ old('is_available', true) ? 'checked' : '' }} class="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded">
+                        <label for="is_available" class="ml-2 block text-sm text-gray-900">
+                            Available for Purchase
+                        </label>
+                    </div>
                 </div>
 
                 <div class="pt-6 border-t border-gray-200">
@@ -155,10 +213,8 @@
 
 <script>
     function selectBrand(brandId) {
-        // 1. Update Hidden Input
         document.getElementById('hidden_brand_id').value = brandId;
 
-        // 2. Update UI (active state on buttons)
         document.querySelectorAll('.brand-btn').forEach(btn => {
             if (btn.dataset.brandBtn === brandId) {
                 btn.classList.add('border-blue-600', 'bg-blue-50/10', 'shadow-md', 'ring-2', 'ring-blue-600/20');
@@ -167,7 +223,6 @@
                 btn.querySelector('span').classList.add('text-blue-700');
                 btn.querySelector('span').classList.remove('text-gray-400');
                 
-                // Add Checkmark
                 if (!btn.querySelector('.absolute')) {
                     const check = document.createElement('div');
                     check.className = 'absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg z-10';
@@ -181,17 +236,15 @@
                 btn.querySelector('span').classList.remove('text-blue-700');
                 btn.querySelector('span').classList.add('text-gray-400');
                 
-                // Remove Checkmark
                 const check = btn.querySelector('.absolute');
                 if (check) check.remove();
             }
         });
 
-        // 3. Filter Models
         const modelSelect = document.getElementById('phone_model_id');
         const optgroups = modelSelect.querySelectorAll('optgroup');
         
-        modelSelect.value = ''; // Reset selection
+        modelSelect.value = '';
 
         optgroups.forEach(group => {
             if (group.dataset.brand === brandId) {
@@ -202,7 +255,6 @@
         });
     }
 
-    // Auto-select brand if old input exists (e.g. after validation error)
     @if(old('brand_id'))
         window.addEventListener('load', () => selectBrand('{{ old('brand_id') }}'));
     @endif

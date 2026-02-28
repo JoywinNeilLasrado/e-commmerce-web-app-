@@ -42,8 +42,8 @@
                             @forelse($topProducts as $item)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $item->productVariant->product->title ?? 'N/A' }}
-                                        <span class="text-xs text-gray-500 block">{{ $item->productVariant->storage ?? '' }} - {{ $item->productVariant->color ?? '' }}</span>
+                                        {{ $item->phone_title ?? $item->product?->title ?? 'N/A' }}
+                                        <span class="text-xs text-gray-500 block">{{ $item->storage ?? '' }} - {{ $item->color ?? '' }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $item->total_sold }}

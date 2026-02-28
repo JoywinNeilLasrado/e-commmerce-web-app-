@@ -37,7 +37,7 @@
                             </button>
                         </div>
 
-                        @php $condition = $product->variants->first()?->condition?->name ?? 'Refurbished'; @endphp
+                        @php $condition = $product->condition->name ?? 'Refurbished'; @endphp
                         <div class="absolute top-5 left-5">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
                                 @if($condition === 'Excellent') bg-emerald-100 text-emerald-700
@@ -91,6 +91,19 @@
                     </div>
                     <span class="text-sm font-bold text-gray-900">{{ number_format($avgRating, 1) }}</span>
                     <span class="text-sm text-gray-400">({{ $product->reviews_count }} reviews)</span>
+                </div>
+
+                <!-- Product Specs -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    @if($product->storage)
+                        <span class="text-xs font-bold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">💾 {{ $product->storage }}</span>
+                    @endif
+                    @if($product->color)
+                        <span class="text-xs font-bold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">🎨 {{ $product->color }}</span>
+                    @endif
+                    @if($product->condition)
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">{{ $product->condition->name }} Grade</span>
+                    @endif
                 </div>
 
                 <!-- Description -->
@@ -283,57 +296,34 @@
                 <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-xl shadow-gray-100/80 sticky top-28">
                     <form action="{{ route('cart.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                         <!-- Price -->
                         <div class="mb-6">
                             <div class="flex items-baseline gap-3">
-                                <p id="product-price" class="text-4xl font-black text-gray-900">₹{{ number_format($product->base_price, 0) }}</p>
-                                <p id="product-original-price" class="text-lg text-gray-400 line-through {{ $product->original_price ? '' : 'hidden' }}">₹{{ number_format($product->original_price, 0) }}</p>
+                                <p class="text-4xl font-black text-gray-900">₹{{ number_format($product->price, 0) }}</p>
+                                @if($product->original_price > $product->price)
+                                    <p class="text-lg text-gray-400 line-through">₹{{ number_format($product->original_price, 0) }}</p>
+                                @endif
                             </div>
                             <div class="flex items-center gap-2 mt-2">
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                    In Stock
-                                </span>
+                                @if($product->inStock())
+                                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                        In Stock ({{ $product->stock }})
+                                    </span>
+                                @else
+                                    <span class="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Out of Stock</span>
+                                @endif
                                 <span class="text-xs text-gray-400">Free delivery</span>
                             </div>
                         </div>
-
-                        <!-- Variant Selection -->
-                        @if($product->variants->count() > 0)
-                            <div class="mb-5">
-                                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Select Variant</label>
-                                <div class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
-                                    @foreach($product->variants as $variant)
-                                    <label class="relative flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200 {{ $loop->first ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50' }}">
-                                            <input type="radio" name="variant_id" value="{{ $variant->id }}" 
-                                                   data-price="{{ $variant->price }}" 
-                                                   data-original-price="{{ $variant->original_price ?? '' }}"
-                                                   data-stock="{{ $variant->stock }}"
-                                                   class="sr-only" {{ $loop->first ? 'checked' : '' }}>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="flex items-center gap-2">
-                                                    <p class="text-sm font-bold {{ $variant->stock == 0 ? 'text-gray-400' : 'text-gray-900' }}">
-                                                        {{ $variant->storage }} · {{ $variant->color }}
-                                                    </p>
-                                                    @if($variant->stock == 0)
-                                                        <span class="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded">Out of Stock</span>
-                                                    @endif
-                                                </div>
-                                                <p class="text-xs text-gray-500">{{ $variant->condition->name }} Grade</p>
-                                            </div>
-                                            <span class="text-sm font-black {{ $variant->stock == 0 ? 'text-gray-400' : 'text-blue-600' }} flex-shrink-0">₹{{ number_format($variant->price, 0) }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
 
                         <!-- Quantity -->
                         <div class="mb-6">
                             <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Quantity</label>
                             <select name="quantity" class="w-full border border-gray-200 rounded-xl py-2.5 px-4 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 bg-gray-50">
-                                @for($i = 1; $i <= 5; $i++)
+                                @for($i = 1; $i <= min(5, $product->stock); $i++)
                                     <option value="{{ $i }}">{{ $i }}</option>
                                 @endfor
                             </select>
@@ -341,17 +331,23 @@
 
                         <!-- CTA Buttons -->
                         <div class="space-y-3">
-                            <button type="submit" name="action" value="add_to_cart"
-                                    class="btn-ripple w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                Add to Cart
-                            </button>
-                            <button type="submit" name="action" value="buy_now"
-                               class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
-                                Buy Now
-                            </button>
-
-                            <!-- Wishlist Toggle -->
+                            @if($product->inStock())
+                                <button type="submit" name="action" value="add_to_cart"
+                                        class="btn-ripple w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    Add to Cart
+                                </button>
+                                <button type="submit" name="action" value="buy_now"
+                                   class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                    Buy Now
+                                </button>
+                            @else
+                                <button type="button" disabled
+                                        class="w-full bg-gray-400 text-white font-bold py-4 rounded-2xl cursor-not-allowed flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                    Out of Stock
+                                </button>
+                            @endif
                         </div>
                     </form>
 
@@ -387,7 +383,6 @@ function updateMainImage() {
     const mainImg = document.getElementById('mainImage');
     const thumbnails = document.querySelectorAll('.thumbnail-btn');
     
-    // Animation
     mainImg.style.opacity = '0';
     mainImg.style.transform = 'scale(0.95)';
     
@@ -396,7 +391,6 @@ function updateMainImage() {
         mainImg.style.opacity = '1';
         mainImg.style.transform = 'scale(1)';
         
-        // Update thumbnails UI
         thumbnails.forEach((btn, index) => {
             if (index === currentImageIndex) {
                 btn.classList.add('border-blue-500');
@@ -428,79 +422,6 @@ function changeImage(src, btn) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const priceDisplay = document.getElementById('product-price');
-    const originalPriceDisplay = document.getElementById('product-original-price');
-    const variantInputs = document.querySelectorAll('input[name="variant_id"]');
-    const baseOriginalPrice = "{{ $product->original_price }}";
-    const addToCartBtn = document.querySelector('button[value="add_to_cart"]');
-    const buyNowBtn = document.querySelector('button[value="buy_now"]');
-
-    function updateState(price, originalPrice, stock) {
-        // 1. Update Price
-        const formattedPrice = new Intl.NumberFormat('en-IN').format(price);
-        priceDisplay.textContent = '₹' + formattedPrice;
-        
-        if (originalPrice && parseFloat(originalPrice) > parseFloat(price)) {
-            const formattedOriginal = new Intl.NumberFormat('en-IN').format(originalPrice);
-            originalPriceDisplay.textContent = '₹' + formattedOriginal;
-            originalPriceDisplay.classList.remove('hidden');
-        } else if (!originalPrice && baseOriginalPrice && parseFloat(baseOriginalPrice) > parseFloat(price)) {
-            const formattedOriginal = new Intl.NumberFormat('en-IN').format(baseOriginalPrice);
-            originalPriceDisplay.textContent = '₹' + formattedOriginal;
-            originalPriceDisplay.classList.remove('hidden');
-        } else {
-            originalPriceDisplay.classList.add('hidden');
-        }
-        
-        // Animation
-        priceDisplay.classList.remove('scale-100');
-        priceDisplay.classList.add('scale-105', 'text-blue-600');
-        setTimeout(() => {
-            priceDisplay.classList.remove('scale-105', 'text-blue-600');
-            priceDisplay.classList.add('scale-100');
-        }, 200);
-
-        // 2. Update Buttons based on Stock
-        if (parseInt(stock) === 0) {
-            addToCartBtn.disabled = true;
-            addToCartBtn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                Out of Stock
-            `;
-            addToCartBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            addToCartBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/30', 'hover:shadow-blue-600/50', 'hover:scale-[1.02]');
-            
-            buyNowBtn.disabled = true;
-            buyNowBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            buyNowBtn.classList.remove('hover:bg-gray-800', 'hover:scale-[1.02]');
-        } else {
-            addToCartBtn.disabled = false;
-            addToCartBtn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                Add to Cart
-            `;
-            addToCartBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            addToCartBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/30', 'hover:shadow-blue-600/50', 'hover:scale-[1.02]');
-            
-            buyNowBtn.disabled = false;
-            buyNowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            buyNowBtn.classList.add('hover:bg-gray-800', 'hover:scale-[1.02]');
-        }
-    }
-
-    variantInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            if (this.checked) {
-                updateState(this.dataset.price, this.dataset.originalPrice, this.dataset.stock);
-            }
-        });
-
-        // Initialize with checked input
-        if (input.checked) {
-            updateState(input.dataset.price, input.dataset.originalPrice, input.dataset.stock);
-        }
-    });
-
     // Review System
     const starBtns = document.querySelectorAll('.star-btn');
     const ratingInput = document.getElementById('rating-input');

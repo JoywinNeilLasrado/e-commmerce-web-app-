@@ -43,8 +43,8 @@
                         @foreach($order->items as $item)
                             <li class="p-6 flex items-center">
                                 <div class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100 flex items-center justify-center">
-                                    @if($item->productVariant->product->primary_image_url)
-                                        <img src="{{ $item->productVariant->product->primary_image_url }}" alt="{{ $item->productVariant->product->title }}" class="h-full w-full object-cover object-center">
+                                    @if($item->product && $item->product->primary_image_url)
+                                        <img src="{{ $item->product->primary_image_url }}" alt="{{ $item->product->title }}" class="h-full w-full object-cover object-center">
                                     @else
                                         <span class="text-3xl">📱</span>
                                     @endif
@@ -52,20 +52,20 @@
                                 <div class="ml-4 flex-1">
                                     <div class="flex justify-between">
                                         <h3 class="text-base font-medium text-gray-900">
-                                            <a href="{{ route('products.show', $item->productVariant->product->slug) }}">
-                                                {{ $item->productVariant->product->title }}
+                                            <a href="{{ $item->product ? route('products.show', $item->product->slug) : '#' }}">
+                                                {{ $item->phone_title ?? $item->product->title ?? 'Product' }}
                                             </a>
                                         </h3>
                                         <p class="ml-4 font-medium text-gray-900">₹{{ number_format($item->price * $item->quantity, 0) }}</p>
                                     </div>
                                     <p class="mt-1 text-sm text-gray-500">
-                                        {{ $item->productVariant->storage }} | {{ $item->productVariant->color }} | {{ $item->productVariant->condition->name }}
+                                        {{ $item->storage }} | {{ $item->color }} | {{ $item->condition }}
                                     </p>
                                     <div class="flex justify-between items-center mt-1">
                                         <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
                                         <form action="{{ route('cart.store') }}" method="POST">
                                             @csrf
-                                            <input type="hidden" name="variant_id" value="{{ $item->product_variant_id }}">
+                                            <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                             <input type="hidden" name="quantity" value="1">
                                             <button type="submit" class="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-sm">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 118 0v4M5 9h14l1 12H4L5 9z"/></svg>
@@ -75,7 +75,7 @@
                                     </div>
                                     
                                     @php
-                                        $userReview = $item->productVariant->product->reviews->where('user_id', auth()->id())->first();
+                                        $userReview = $item->product ? $item->product->reviews->where('user_id', auth()->id())->first() : null;
                                     @endphp
 
                                     <div class="mt-4 border-t border-gray-100 pt-4">
@@ -105,7 +105,7 @@
                                             <form id="edit-review-{{ $item->id }}" action="{{ route('reviews.update', $userReview->id) }}" method="POST" class="hidden bg-white rounded-xl p-4 border border-gray-200 shadow-sm relative">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="hidden" name="product_id" value="{{ $item->productVariant->product->id }}">
+                                                <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                                 
                                                 <button type="button" onclick="toggleOrderEdit('{{ $item->id }}')" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -142,7 +142,7 @@
                                         @else
                                             <form action="{{ route('reviews.store') }}" method="POST" class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                                                 @csrf
-                                                <input type="hidden" name="product_id" value="{{ $item->productVariant->product->id }}">
+                                                <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                                 
                                                 <div class="mb-4">
                                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Rating</label>

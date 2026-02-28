@@ -29,14 +29,14 @@ class ReportController extends Controller
 
         // 2. Top Selling Products
         $topProducts = OrderItem::select(
-            'product_variant_id',
+            'product_id',
             DB::raw('SUM(quantity) as total_sold'),
             DB::raw('SUM(price * quantity) as total_revenue')
         )
-        ->with(['productVariant.product', 'productVariant.condition'])
+        ->with(['product'])
         ->join('orders', 'order_items.order_id', '=', 'orders.id')
         ->where('orders.status', '!=', 'cancelled')
-        ->groupBy('product_variant_id')
+        ->groupBy('product_id')
         ->orderByDesc('total_sold')
         ->take(5)
         ->get();

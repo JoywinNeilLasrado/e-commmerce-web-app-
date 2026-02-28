@@ -10,7 +10,7 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $featuredProducts = Product::with(['phoneModel.brand', 'variants'])
+        $featuredProducts = Product::with(['phoneModel.brand', 'condition'])
             ->where('is_active', true)
             ->where('is_featured', true)
             ->latest('published_at')

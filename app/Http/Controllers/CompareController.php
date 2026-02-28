@@ -17,7 +17,7 @@ class CompareController extends Controller
             $compareProducts = Product::with([
                 'phoneModel.brand',
                 'phoneModel',
-                'variants.condition',
+                'condition',
                 'images',
             ])
             ->whereIn('id', $ids)

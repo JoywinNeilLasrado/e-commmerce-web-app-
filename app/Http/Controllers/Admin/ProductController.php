@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
+use App\Models\Condition;
 use App\Models\PhoneModel;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -15,7 +16,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['phoneModel.brand', 'variants'])
+        $products = Product::with(['phoneModel.brand', 'condition'])
             ->latest()
             ->paginate(10);
             
@@ -25,28 +26,38 @@ class ProductController extends Controller
     public function create()
     {
         $brands = Brand::with('phoneModels')->get();
-        return view('admin.products.create', compact('brands'));
+        $conditions = Condition::all();
+        return view('admin.products.create', compact('brands', 'conditions'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'phone_model_id' => 'required|exists:phone_models,id',
+            'condition_id' => 'required|exists:conditions,id',
             'title' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'storage' => 'required|string|max:50',
+            'color' => 'required|string|max:50',
+            'stock' => 'required|integer|min:0',
+            'sku' => 'required|string|unique:products,sku|max:100',
             'warranty_months' => 'required|integer|min:0',
             'whats_in_box' => 'nullable|string',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
-            'primary_image' => 'required|image|max:2048', // Max 2MB
+            'is_available' => 'boolean',
+            'primary_image' => 'required|image|max:2048',
             'product_images.*' => 'nullable|image|max:2048',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_available'] = $request->has('is_available');
         $validated['slug'] = $this->generateUniqueSlug($validated['title']);
+        $validated['price'] = $validated['base_price'];
+        $validated['published_at'] = now();
 
         // Handle Primary Image
         if ($request->hasFile('primary_image')) {
@@ -74,39 +85,47 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $brands = Brand::with('phoneModels')->get();
-        return view('admin.products.edit', compact('product', 'brands'));
+        $conditions = Condition::all();
+        return view('admin.products.edit', compact('product', 'brands', 'conditions'));
     }
 
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
             'phone_model_id' => 'required|exists:phone_models,id',
+            'condition_id' => 'required|exists:conditions,id',
             'title' => 'required|string|max:255',
             'base_price' => 'required|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'storage' => 'required|string|max:50',
+            'color' => 'required|string|max:50',
+            'stock' => 'required|integer|min:0',
+            'sku' => 'required|string|max:100|unique:products,sku,' . $product->id,
             'warranty_months' => 'required|integer|min:0',
             'whats_in_box' => 'nullable|string',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
-            'primary_image' => 'nullable|image|max:20480', // Max 20MB
+            'is_available' => 'boolean',
+            'primary_image' => 'nullable|image|max:20480',
             'product_images.*' => 'nullable|image|max:20480',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_available'] = $request->has('is_available');
+        $validated['price'] = $validated['base_price'];
 
-        // Only update slug if title changed, to preserve existing links
+        // Only update slug if title changed
         if ($product->title !== $validated['title']) {
             $validated['slug'] = $this->generateUniqueSlug($validated['title'], $product->id);
         }
 
-        // Remove images from $validated so they don't overwrite as NULL if no file is uploaded
+        // Remove images from $validated so they don't overwrite as NULL
         unset($validated['primary_image'], $validated['product_images']);
 
         // Handle Primary Image
         if ($request->hasFile('primary_image')) {
-            // Delete old image if it's a local file (not an external URL)
             if ($product->primary_image && !Str::startsWith($product->primary_image, 'http')) {
                 Storage::disk('public')->delete($product->primary_image);
             }
@@ -121,7 +140,6 @@ class ProductController extends Controller
             $allImages = $request->file('product_images');
             $filesToProcess = [];
             
-            // Flatten the array in case multiple inputs were used (multi-selection fix)
             foreach ($allImages as $item) {
                 if (is_array($item)) {
                     $filesToProcess = array_merge($filesToProcess, $item);
@@ -151,7 +169,6 @@ class ProductController extends Controller
 
     public function destroyImage(ProductImage $productImage)
     {
-        // Delete file from storage
         if (!Str::startsWith($productImage->image_path, 'http')) {
             Storage::disk('public')->delete($productImage->image_path);
         }

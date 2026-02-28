@@ -20,16 +20,16 @@
                         <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
                             <div class="flex items-center">
                                 <div class="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center text-2xl flex-shrink-0">
-                                    @if($item->productVariant->product->primary_image_url)
-                                        <img src="{{ $item->productVariant->product->primary_image_url }}" alt="{{ $item->productVariant->product->title }}" class="h-full w-full object-cover object-center rounded-md">
+                                    @if($item->product && $item->product->primary_image_url)
+                                        <img src="{{ $item->product->primary_image_url }}" alt="{{ $item->product->title }}" class="h-full w-full object-cover object-center rounded-md">
                                     @else
                                         📱
                                     @endif
                                 </div>
                                 <div class="ml-4">
-                                    <h3 class="text-sm font-medium text-gray-900">{{ $item->productVariant->product->title }}</h3>
-                                    <p class="text-sm text-gray-500">{{ $item->productVariant->storage }} | {{ $item->productVariant->color }} | {{ $item->productVariant->condition->name }}</p>
-                                    <p class="text-xs text-gray-400">SKU: {{ $item->productVariant->sku }}</p>
+                                    <h3 class="text-sm font-medium text-gray-900">{{ $item->phone_title ?? $item->product?->title ?? 'Product' }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $item->storage }} | {{ $item->color }} | {{ $item->condition }}</p>
+                                    <p class="text-xs text-gray-400">SKU: {{ $item->product?->sku ?? 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="text-right">

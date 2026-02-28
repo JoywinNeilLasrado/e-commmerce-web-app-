@@ -63,15 +63,15 @@
                             @foreach($order->items as $item)
                                 <div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
                                     <div class="w-14 h-14 flex-shrink-0 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center p-1.5">
-                                        <img src="{{ $item->productVariant?->product?->primary_image_url ?? asset('images/placeholder.png') }}"
-                                             alt="{{ $item->phone_title ?? $item->productVariant?->product?->title }}"
+                                        <img src="{{ $item->product?->primary_image_url ?? asset('images/placeholder.png') }}"
+                                             alt="{{ $item->phone_title ?? $item->product?->title }}"
                                              class="w-full h-full object-contain">
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-bold text-gray-900 truncate">{{ $item->phone_title ?? $item->productVariant?->product?->title }}</h4>
+                                        <h4 class="text-sm font-bold text-gray-900 truncate">{{ $item->phone_title ?? $item->product?->title }}</h4>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ $item->storage ?? $item->productVariant?->storage }}</span>
-                                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ $item->color ?? $item->productVariant?->color }}</span>
+                                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ $item->storage ?? $item->product?->storage }}</span>
+                                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ $item->color ?? $item->product?->color }}</span>
                                             <span class="text-[10px] text-gray-400">Qty: {{ $item->quantity }}</span>
                                         </div>
                                     </div>

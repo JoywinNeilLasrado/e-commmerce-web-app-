@@ -14,8 +14,8 @@ class Condition extends Model
         'sort_order'
     ];
 
-    public function productVariants(): HasMany
+    public function products(): HasMany
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(Product::class);
     }
 }

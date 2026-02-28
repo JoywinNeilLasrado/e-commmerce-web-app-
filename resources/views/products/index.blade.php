@@ -57,7 +57,13 @@
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Price Range</h3>
                     <form action="{{ route('products.index') }}" method="GET" class="space-y-4">
                         @foreach(request()->except(['min_price', 'max_price']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @if(is_array($value))
+                                @foreach($value as $arrVal)
+                                    <input type="hidden" name="{{ $key }}[]" value="{{ $arrVal }}">
+                                @endforeach
+                            @else
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
                         @endforeach
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -80,32 +86,48 @@
                 <!-- Condition Filter -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Condition</h3>
-                    <div class="space-y-3">
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <div class="w-4 h-4 border-2 border-emerald-400 rounded bg-emerald-50 flex items-center justify-center">
-                                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                            </div>
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Excellent</span>
-                            <span class="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Best</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <div class="w-4 h-4 border-2 border-blue-400 rounded bg-blue-50 flex items-center justify-center">
-                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            </div>
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Good</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <div class="w-4 h-4 border-2 border-amber-400 rounded bg-amber-50 flex items-center justify-center">
-                                <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
-                            </div>
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Fair</span>
-                            <span class="ml-auto text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Budget</span>
-                        </label>
+                    <div class="space-y-2">
+                        @php
+                            $activeConditions = is_array(request('condition')) ? request('condition') : (request('condition') ? [request('condition')] : []);
+                            $conditionStyles = [
+                                'Excellent' => ['dot' => 'bg-emerald-500', 'border' => 'border-emerald-400', 'bg' => 'bg-emerald-50', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Best'],
+                                'Good'      => ['dot' => 'bg-blue-500', 'border' => 'border-blue-400', 'bg' => 'bg-blue-50', 'badge' => '', 'label' => ''],
+                                'Fair'      => ['dot' => 'bg-amber-500', 'border' => 'border-amber-400', 'bg' => 'bg-amber-50', 'badge' => 'text-amber-600 bg-amber-50', 'label' => 'Budget'],
+                            ];
+                        @endphp
+                        @foreach($conditions as $cond)
+                            @php
+                                $isActive = in_array((string)$cond->id, $activeConditions);
+                                $style = $conditionStyles[$cond->name] ?? ['dot' => 'bg-gray-500', 'border' => 'border-gray-400', 'bg' => 'bg-gray-50', 'badge' => '', 'label' => ''];
+
+                                // Toggle this condition: add if not present, remove if present
+                                if ($isActive) {
+                                    $newConditions = array_filter($activeConditions, fn($c) => $c != (string)$cond->id);
+                                    $params = request()->except(['condition', 'page']);
+                                    if (!empty($newConditions)) $params['condition'] = array_values($newConditions);
+                                } else {
+                                    $newConditions = array_merge($activeConditions, [(string)$cond->id]);
+                                    $params = array_merge(request()->except(['condition', 'page']), ['condition' => $newConditions]);
+                                }
+                            @endphp
+                            <a href="{{ route('products.index', $params) }}"
+                               class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all cursor-pointer group {{ $isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'hover:bg-gray-50' }}">
+                                <div class="w-4 h-4 border-2 {{ $style['border'] }} rounded {{ $isActive ? $style['bg'] : 'bg-white' }} flex items-center justify-center">
+                                    @if($isActive)
+                                        <div class="w-2 h-2 {{ $style['dot'] }} rounded-full"></div>
+                                    @endif
+                                </div>
+                                <span class="text-sm font-medium {{ $isActive ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900' }}">{{ $cond->name }}</span>
+                                @if($style['label'])
+                                    <span class="ml-auto text-[10px] font-bold {{ $style['badge'] }} px-2 py-0.5 rounded-full">{{ $style['label'] }}</span>
+                                @endif
+                            </a>
+                        @endforeach
                     </div>
                 </div>
 
                 <!-- Clear Filters -->
-                @if(request()->hasAny(['brand', 'min_price', 'max_price', 'search']))
+                @if(request()->hasAny(['brand', 'min_price', 'max_price', 'search', 'condition']))
                     <a href="{{ route('products.index') }}" class="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-dashed border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:border-red-300 hover:text-red-500 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         Clear All Filters

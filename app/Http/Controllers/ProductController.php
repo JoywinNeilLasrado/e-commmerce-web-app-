@@ -11,12 +11,10 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['phoneModel.brand', 'variants'])
+        $query = Product::with(['phoneModel.brand', 'condition'])
             ->where('is_active', true)
             ->whereNotNull('published_at')
-            ->whereHas('variants', function ($q) {
-                $q->where('stock', '>', 0);
-            });
+            ->where('stock', '>', 0);
 
         // Filter by brand
         if ($request->filled('brand')) {
@@ -25,14 +23,28 @@ class ProductController extends Controller
             });
         }
 
+        // Filter by condition
+        if ($request->filled('condition')) {
+            $conditionIds = is_array($request->condition) ? $request->condition : [$request->condition];
+            $query->whereIn('condition_id', $conditionIds);
+        }
+
+        // Filter by price range
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
         // Search
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%') // Search Description
+                  ->orWhere('description', 'like', '%' . $request->search . '%')
                   ->orWhereHas('phoneModel', function ($query) use ($request) {
                       $query->where('name', 'like', '%' . $request->search . '%')
-                            ->orWhereHas('brand', function ($brandQuery) use ($request) { // Search Brand
+                            ->orWhereHas('brand', function ($brandQuery) use ($request) {
                                 $brandQuery->where('name', 'like', '%' . $request->search . '%');
                             });
                   });
@@ -43,10 +55,10 @@ class ProductController extends Controller
         $sort = $request->get('sort', 'latest');
         switch ($sort) {
             case 'price_low':
-                $query->orderByRaw('base_price ASC');
+                $query->orderByRaw('price ASC');
                 break;
             case 'price_high':
-                $query->orderByRaw('base_price DESC');
+                $query->orderByRaw('price DESC');
                 break;
             case 'popular':
                 $query->orderBy('views', 'desc');
@@ -57,28 +69,30 @@ class ProductController extends Controller
 
         $products = $query->paginate(12);
         $brands = Brand::where('is_active', true)->get();
+        $conditions = Condition::all();
 
         if ($request->routeIs('api.*') || $request->wantsJson()) {
             return response()->json([
                 'message' => 'product page communicated successfully',
                 'products' => $products,
-                'brands' => $brands
+                'brands' => $brands,
+                'conditions' => $conditions
             ]);
         }
 
-        return view('products.index', compact('products', 'brands'));
+        return view('products.index', compact('products', 'brands', 'conditions'));
     }
 
     public function show($slug, Request $request)
     {
-        $product = Product::with(['phoneModel.brand', 'images', 'variants.condition', 'reviews.user'])
+        $product = Product::with(['phoneModel.brand', 'images', 'condition', 'reviews.user'])
             ->withCount('reviews')
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
 
         // Get related products
-        $relatedProducts = Product::with(['phoneModel.brand', 'variants'])
+        $relatedProducts = Product::with(['phoneModel.brand', 'condition'])
             ->where('phone_model_id', $product->phone_model_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)

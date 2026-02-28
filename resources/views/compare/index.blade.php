@@ -63,7 +63,6 @@
                                 <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Specs</span>
                             </th>
                             @foreach($compareProducts as $product)
-                                @php $minVariant = $product->variants->where('is_available', true)->sortBy('price')->first(); @endphp
                                 <th class="p-6 border-l border-gray-100 text-center align-top">
                                     <div class="flex flex-col items-center gap-3">
                                         <!-- Image -->
@@ -76,17 +75,15 @@
                                             <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">{{ $product->phoneModel->brand->name }}</span>
                                         @endif
                                         <h3 class="text-sm font-black text-gray-900 leading-tight">{{ $product->title }}</h3>
-                                        @if($minVariant)
-                                            <div class="text-center">
-                                                <p class="text-xl font-black text-gray-900">₹{{ number_format($minVariant->price, 0) }}</p>
-                                                @if($minVariant->original_price > $minVariant->price)
-                                                    <p class="text-xs text-gray-400 line-through">₹{{ number_format($minVariant->original_price, 0) }}</p>
-                                                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                                        {{ $minVariant->discount_percentage }}% OFF
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        @endif
+                                        <div class="text-center">
+                                            <p class="text-xl font-black text-gray-900">₹{{ number_format($product->price, 0) }}</p>
+                                            @if($product->original_price > $product->price)
+                                                <p class="text-xs text-gray-400 line-through">₹{{ number_format($product->original_price, 0) }}</p>
+                                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                                    {{ $product->discount_percentage }}% OFF
+                                                </span>
+                                            @endif
+                                        </div>
                                         <a href="{{ route('products.show', $product->slug) }}"
                                            class="w-full inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-blue-600/20">
                                             View &amp; Buy
@@ -135,17 +132,15 @@
 
                                 @foreach($compareProducts as $product)
                                     @php
-                                        $variants = $product->variants;
-                                        $availableVariants = $variants->where('is_available', true)->where('stock', '>', 0);
-                                        $minVariant = $variants->where('is_available', true)->sortBy('price')->first();
                                         $pm = $product->phoneModel;
+                                        $inStock = $product->inStock();
 
                                         $value = match($row['key']) {
-                                            'price'     => $minVariant ? '₹' . number_format($minVariant->price, 0) : '—',
-                                            'storage'   => $variants->pluck('storage')->unique()->sort()->join(' / ') ?: '—',
-                                            'colors'    => $variants->pluck('color')->unique()->join(', ') ?: '—',
-                                            'condition' => $variants->pluck('condition.name')->unique()->filter()->join(', ') ?: '—',
-                                            'stock'     => $availableVariants->count() > 0 ? 'In Stock' : 'Out of Stock',
+                                            'price'     => '₹' . number_format($product->price, 0),
+                                            'storage'   => $product->storage ?? '—',
+                                            'colors'    => $product->color ?? '—',
+                                            'condition' => $product->condition?->name ?? '—',
+                                            'stock'     => $inStock ? 'In Stock' : 'Out of Stock',
                                             'warranty'  => $product->warranty_months . ' months',
                                             'display'   => ($pm?->display_size && $pm?->display_type) ? $pm->display_size . ' ' . $pm->display_type : ($pm?->display_size ?? '—'),
                                             'processor' => $pm?->processor ?? '—',
@@ -157,7 +152,6 @@
                                         };
 
                                         $isStock = $row['key'] === 'stock';
-                                        $inStock = $availableVariants->count() > 0;
                                     @endphp
                                     <td class="px-6 py-4 border-l border-gray-100 text-center">
                                         @if($isStock)
