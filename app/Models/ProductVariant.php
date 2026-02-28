@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\LogsActivity;
 
 class ProductVariant extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'product_id',
         'condition_id',
