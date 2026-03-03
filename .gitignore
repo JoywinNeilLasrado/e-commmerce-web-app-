@@ -35,3 +35,9 @@ test_payu_status.php
 test_payu.php
 test_payu2.php
 /resolved folder
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
