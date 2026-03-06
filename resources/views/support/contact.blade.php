@@ -3,7 +3,7 @@
 @section('title', $page->title . ' — PhoneShop')
 
 @section('content')
-<div style="margin-top:80px;">
+<div>
     <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 4rem 1rem 5rem;">
         <div class="max-w-4xl mx-auto text-center">
             <div style="width:4rem;height:4rem;background:rgba(255,255,255,0.1);border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.25rem;">💬</div>
