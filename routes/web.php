@@ -77,6 +77,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
     Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'update', 'destroy']);
     Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Support pages
+    Route::get('support', [\App\Http\Controllers\Admin\SupportPageController::class, 'index'])->name('support.index');
+    Route::get('support/{supportPage}/edit', [\App\Http\Controllers\Admin\SupportPageController::class, 'edit'])->name('support.edit');
+    Route::put('support/{supportPage}', [\App\Http\Controllers\Admin\SupportPageController::class, 'update'])->name('support.update');
+    Route::patch('support/{supportPage}/toggle', [\App\Http\Controllers\Admin\SupportPageController::class, 'toggle'])->name('support.toggle');
 });
 
 // Profile Routes

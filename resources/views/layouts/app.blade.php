@@ -293,7 +293,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="min-h-screen @yield('main-classes')">
+    <main class="min-h-screen pt-20 @yield('main-classes')">
         @yield('content')
     </main>
 

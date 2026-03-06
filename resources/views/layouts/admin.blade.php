@@ -27,38 +27,42 @@
                     </a>
                     
                     <!-- Main Navigation -->
-                    <div class="hidden md:flex items-center space-x-1">
+                    <div class="hidden md:flex items-center gap-0.5">
                         <a href="{{ route('admin.dashboard') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Dashboard
                         </a>
                         <a href="{{ route('admin.products.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.products.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.products.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Products
                         </a>
                         <a href="{{ route('admin.brands.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.brands.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.brands.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Brands
                         </a>
                         <a href="{{ route('admin.orders.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.orders.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.orders.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Orders
                         </a>
                          <a href="{{ route('admin.users.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Users
                         </a>
                         <a href="{{ route('admin.reports.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.reports.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.reports.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Reports
                         </a>
                         <a href="{{ route('admin.reviews.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.reviews.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.reviews.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Reviews
                         </a>
                         <a href="{{ route('admin.activity-logs.index') }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.activity-logs.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.activity-logs.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                             Logs
+                        </a>
+                        <a href="{{ route('admin.support.index') }}" 
+                           class="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 {{ request()->routeIs('admin.support.*') ? 'bg-gray-900 text-white shadow-md shadow-gray-900/10' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+                            Support Pages
                         </a>
                     </div>
                 </div>
