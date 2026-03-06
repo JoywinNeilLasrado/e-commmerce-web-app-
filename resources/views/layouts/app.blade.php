@@ -19,9 +19,17 @@
         .glass { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
         .product-card-img { transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
         .product-card:hover .product-card-img { transform: scale(1.08); }
+        /* Page load overlay — prevents FOUC flash */
+        #page-loader {
+            position: fixed; inset: 0; background: #fff;
+            z-index: 99999; pointer-events: none;
+            transition: opacity 0.18s ease;
+        }
+        #page-loader.done { opacity: 0; }
     </style>
 </head>
 <body class="bg-white text-gray-900 antialiased">
+    <div id="page-loader"></div>
 
     <!-- Premium Navbar -->
     <nav id="smart-navbar" class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 h-20" style="overflow: visible;">
@@ -262,7 +270,11 @@
                  <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-red-500 hover:text-red-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
         @endif
-        @if($errors->any())
+        @php
+            // Exclude errors that belong only to the delete-account modal (password field)
+            $globalErrorMessages = collect($errors->getBag('default')->messages())->except(['password', 'delete_password'])->flatten();
+        @endphp
+        @if($globalErrorMessages->isNotEmpty())
             <div class="toast-message flex items-start gap-3 bg-white/95 backdrop-blur-md border border-red-200 text-red-800 rounded-2xl px-5 py-4 text-sm font-medium shadow-2xl pointer-events-auto" style="opacity: 0; transform: translateY(-20px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
                 <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 00-1.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
@@ -270,12 +282,12 @@
                 <div class="flex-1">
                     <span class="font-bold block mb-1">Please correct the following errors:</span>
                     <ul class="list-disc list-inside space-y-1 ml-1 text-gray-600">
-                        @foreach($errors->all() as $error)
+                        @foreach($globalErrorMessages as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-                 <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-red-500 hover:text-red-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-20px)'; setTimeout(() => this.parentElement.remove(), 500);" class="text-red-500 hover:text-red-700 transition-colors p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
         @endif
     </div>
@@ -344,6 +356,15 @@
     </footer>
 
     <script>
+        // Remove page-load overlay as soon as everything is painted
+        window.addEventListener('load', function() {
+            var loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.add('done');
+                setTimeout(function() { loader.remove(); }, 200);
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');

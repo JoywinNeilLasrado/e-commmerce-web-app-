@@ -197,6 +197,22 @@
     .card-body {
         padding: 1.5rem;
     }
+    /* Delete modal animations */
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        15%      { transform: translateX(-7px); }
+        30%      { transform: translateX(7px); }
+        45%      { transform: translateX(-5px); }
+        60%      { transform: translateX(5px); }
+        75%      { transform: translateX(-3px); }
+        90%      { transform: translateX(3px); }
+    }
+    .shake { animation: shake 0.45s ease; }
+    @keyframes slideDown {
+        from { opacity:0; transform:translateY(-6px); max-height:0; }
+        to   { opacity:1; transform:translateY(0);  max-height:60px; }
+    }
+    .error-slide { animation: slideDown 0.3s ease forwards; overflow:hidden; }
 </style>
 
 {{-- Hero Banner --}}
@@ -535,20 +551,89 @@
         }
     }
 
+    const deleteModal    = document.getElementById('delete-account-modal');
+    const deleteCard     = deleteModal.querySelector('.modal-card');
+    const deleteInput    = document.getElementById('delete_password');
+    const deleteErrorMsg = document.getElementById('delete-error-msg');
+    const deleteForm     = document.getElementById('delete-account-form');
+    const deleteSubmitBtn = deleteForm.querySelector('button[type="submit"]');
+
     function openDeleteModal() {
-        document.getElementById('delete-account-modal').classList.add('active');
+        deleteModal.classList.add('active');
         document.body.style.overflow = 'hidden';
-        setTimeout(() => document.getElementById('delete_password').focus(), 100);
+        setTimeout(() => deleteInput.focus(), 120);
     }
 
     function closeDeleteModal() {
-        document.getElementById('delete-account-modal').classList.remove('active');
+        deleteModal.classList.remove('active');
         document.body.style.overflow = '';
-        document.getElementById('delete_password').value = '';
+        deleteInput.value = '';
+        clearDeleteError();
     }
 
+    function clearDeleteError() {
+        deleteInput.style.borderColor = '';
+        deleteInput.style.background  = '';
+        deleteErrorMsg.style.display  = 'none';
+        deleteErrorMsg.innerHTML      = '';
+    }
+
+    function showDeleteError(msg) {
+        deleteInput.style.borderColor = '#dc2626';
+        deleteInput.style.background  = '#fff1f2';
+        deleteErrorMsg.innerHTML = `
+            <p class="error-slide" style="font-size:0.8rem;color:#dc2626;margin-top:0.45rem;display:flex;align-items:center;gap:0.35rem;">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                ${msg}
+            </p>`;
+        deleteErrorMsg.style.display = 'block';
+        // Shake the modal card
+        deleteCard.classList.remove('shake');
+        void deleteCard.offsetWidth; // reflow to restart animation
+        deleteCard.classList.add('shake');
+        deleteInput.select();
+    }
+
+    // AJAX form submission
+    deleteForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!deleteInput.value.trim()) {
+            showDeleteError('Please enter your password.');
+            return;
+        }
+        // Show loading state
+        deleteSubmitBtn.disabled = true;
+        deleteSubmitBtn.textContent = 'Deleting…';
+
+        const formData = new FormData(deleteForm);
+        try {
+            const response = await fetch(deleteForm.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: formData
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Success — fade out modal then navigate
+                deleteModal.style.opacity = '0';
+                deleteModal.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => { window.location.href = data.redirect || '/'; }, 320);
+            } else {
+                // Wrong password
+                deleteSubmitBtn.disabled = false;
+                deleteSubmitBtn.textContent = 'Yes, Delete Account';
+                showDeleteError(data.message || 'Incorrect password. Please try again.');
+            }
+        } catch (err) {
+            deleteSubmitBtn.disabled = false;
+            deleteSubmitBtn.textContent = 'Yes, Delete Account';
+            showDeleteError('Something went wrong. Please try again.');
+        }
+    });
+
     // Close modal on overlay click
-    document.getElementById('delete-account-modal').addEventListener('click', function(e) {
+    deleteModal.addEventListener('click', function(e) {
         if (e.target === this) closeDeleteModal();
     });
 
@@ -556,11 +641,6 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeDeleteModal();
     });
-
-    // Re-open modal if there's a password validation error from delete attempt
-    @if($errors->has('password') && session()->has('delete_attempted'))
-        document.addEventListener('DOMContentLoaded', () => openDeleteModal());
-    @endif
 
     // Auto-open address form if there are validation errors in the address section
     @if($errors->hasAny(['label','full_name','phone','address_line_1','city','state','postal_code','country']))
@@ -601,16 +681,9 @@
                     <label for="delete_password" class="input-label">Confirm your password to continue</label>
                     <input type="password" name="password" id="delete_password"
                            class="input-field" placeholder="Enter your current password"
-                           autocomplete="current-password">
-                    <div id="delete-password-error" style="display:none;margin-top:0.375rem;">
-                        <p style="font-size:0.75rem;color:#dc2626;display:flex;align-items:center;gap:0.25rem;">
-                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ session('delete_error') ?? 'Incorrect password. Please try again.' }}
-                        </p>
-                    </div>
-                    @if($errors->has('password') && session()->has('delete_attempted'))
-                        <p style="font-size:0.75rem;color:#dc2626;margin-top:0.375rem;">{{ $errors->first('password') }}</p>
-                    @endif
+                           autocomplete="current-password"
+                           oninput="clearDeleteError()">
+                    <div id="delete-error-msg" style="display:none;"></div>
                 </div>
 
                 <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">

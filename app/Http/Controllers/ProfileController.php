@@ -166,8 +166,20 @@ class ProfileController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            'password' => ['required', 'current_password'],
+            'password' => ['required'],
         ]);
+
+        if (!Hash::check($request->password, $request->user()->password)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Incorrect password. Please try again.',
+                ], 422);
+            }
+
+            return back()
+                ->withErrors(['delete_password' => 'Incorrect password. Please try again.'])
+                ->with('delete_attempted', true);
+        }
 
         $user = $request->user();
 
@@ -176,6 +188,10 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         $user->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['redirect' => url('/')]);
+        }
 
         return redirect('/')->with('status', "Your account has been permanently deleted. We're sorry to see you go!");
     }
