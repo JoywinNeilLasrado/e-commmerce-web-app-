@@ -68,19 +68,7 @@
                                     <input type="hidden" name="brand_id" id="hidden_brand_id" value="{{ $product->phoneModel->brand_id }}">
                                 </div>
 
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Phone Model</label>
-                                    <select id="phone_model_id" name="phone_model_id" required class="block w-full rounded-xl border-gray-200 text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5 font-medium">
-                                        <option value="">Select Brand First</option>
-                                        @foreach($brands as $brand)
-                                            <optgroup label="{{ $brand->name }}" data-brand="{{ $brand->id }}" {{ $product->phoneModel->brand_id == $brand->id ? '' : 'hidden' }}>
-                                                @foreach($brand->phoneModels as $model)
-                                                    <option value="{{ $model->id }}" {{ $product->phone_model_id == $model->id ? 'selected' : '' }}>{{ $model->name }}</option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                <input type="hidden" name="phone_model_id" value="{{ $product->phone_model_id }}">
                             </div>
                             
                             <div>
@@ -101,20 +89,33 @@
                                 </div>
                             </div>
 
-                            <div class="pt-3 flex gap-4 flex-wrap">
-                                <label class="inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
-                                    <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Active</span>
+                            <div class="pt-3 flex gap-6 flex-wrap">
+                                @foreach([
+                                    ['name' => 'is_active',    'label' => 'Active',    'checked' => old('is_active',    $product->is_active)],
+                                    ['name' => 'is_featured',  'label' => 'Featured',  'checked' => old('is_featured',  $product->is_featured)],
+                                    ['name' => 'is_available', 'label' => 'Available', 'checked' => old('is_available', $product->is_available)],
+                                ] as $toggle)
+                                <label class="inline-flex items-center gap-3 cursor-pointer select-none" onclick="toggleSwitch(this)">
+                                    <input type="checkbox" name="{{ $toggle['name'] }}" value="1" {{ $toggle['checked'] ? 'checked' : '' }} class="hidden">
+                                    <span class="toggle-track relative inline-block w-14 h-8 rounded-full transition-all duration-300"
+                                          style="background: {{ $toggle['checked'] ? 'linear-gradient(to right, #34d399, #60a5fa)' : '#d1d5db' }}">
+                                        <span class="toggle-thumb absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300"
+                                              style="transform: {{ $toggle['checked'] ? 'translateX(24px)' : 'translateX(0)' }}"></span>
+                                    </span>
+                                    <span class="text-sm font-medium text-gray-700">{{ $toggle['label'] }}</span>
                                 </label>
-                                <label class="inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $product->is_featured) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
-                                    <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Featured</span>
-                                </label>
-                                <label class="inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" name="is_available" value="1" {{ old('is_available', $product->is_available) ? 'checked' : '' }} class="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-offset-0 focus:ring-gray-200 focus:ring-opacity-50 h-4 w-4 cursor-pointer">
-                                    <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 select-none">Available</span>
-                                </label>
+                                @endforeach
                             </div>
+                            <script>
+                            function toggleSwitch(label) {
+                                const cb    = label.querySelector('input[type=checkbox]');
+                                const track = label.querySelector('.toggle-track');
+                                const thumb = label.querySelector('.toggle-thumb');
+                                cb.checked = !cb.checked;
+                                track.style.background = cb.checked ? 'linear-gradient(to right, #34d399, #60a5fa)' : '#d1d5db';
+                                thumb.style.transform  = cb.checked ? 'translateX(24px)' : 'translateX(0)';
+                            }
+                            </script>
                         </div>
                     </div>
                 </div>
@@ -166,75 +167,102 @@
 
                 <!-- Right Column: Details (col-span-4) -->
                 <div class="lg:col-span-4 space-y-4">
-                    <!-- Product Details -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-                        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Product Details</h2>
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Storage</label>
-                                    <input type="text" name="storage" value="{{ old('storage', $product->storage) }}" required placeholder="e.g. 128GB"
-                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Color</label>
-                                    <input type="text" name="color" value="{{ old('color', $product->color) }}" required placeholder="e.g. Blue"
-                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Condition</label>
-                                <select name="condition_id" required class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
-                                    <option value="">Select Condition</option>
-                                    @foreach($conditions as $condition)
-                                        <option value="{{ $condition->id }}" {{ old('condition_id', $product->condition_id) == $condition->id ? 'selected' : '' }}>{{ $condition->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Stock</label>
-                                    <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" required min="0"
-                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">SKU</label>
-                                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" required
-                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5">
-                                </div>
-                            </div>
+                    <!-- Product Details Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60">
+                            <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Product Details</h2>
                         </div>
-                    </div>
+                        <div class="p-5 space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-500">Storage</label>
+                                    <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                        <input type="text" name="storage" value="{{ old('storage', $product->storage) }}" required placeholder="e.g. 128GB"
+                                               class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white placeholder-gray-300">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-500">Color</label>
+                                    <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                        <input type="text" name="color" value="{{ old('color', $product->color) }}" required placeholder="e.g. Blue"
+                                               class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white placeholder-gray-300">
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-                        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Technical Details</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Warranty</label>
-                                <div class="relative rounded-md shadow-sm">
-                                    <input type="number" name="warranty_months" value="{{ old('warranty_months', $product->warranty_months) }}" required min="0" 
-                                           class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 py-1.5 pr-8">
-                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                                        <span class="text-gray-400 text-xs">M</span>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-500">Condition</label>
+                                <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                    <select name="condition_id" required class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white">
+                                        <option value="">Select Condition</option>
+                                        @foreach($conditions as $condition)
+                                            <option value="{{ $condition->id }}" {{ old('condition_id', $product->condition_id) == $condition->id ? 'selected' : '' }}>{{ $condition->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-500">Stock</label>
+                                    <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" required min="0"
+                                               class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-500">SKU</label>
+                                    <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                        <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" required
+                                               class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white font-mono">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-                        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">In The Box</h2>
-                        <div>
-                            <textarea name="whats_in_box" rows="2" class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 shadow-sm py-1.5 resize-y">{{ old('whats_in_box', $product->whats_in_box) }}</textarea>
+                    <!-- Technical Details Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60">
+                            <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Technical Details</h2>
+                        </div>
+                        <div class="p-5">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-500">Warranty <span class="text-gray-300 font-normal">(months)</span></label>
+                                <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                    <input type="number" name="warranty_months" value="{{ old('warranty_months', $product->warranty_months) }}" required min="0"
+                                           class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 pr-16 bg-white">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium pointer-events-none">months</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-                        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Description</h2>
-                        <div>
-                            <textarea name="description" rows="4" class="block w-full rounded-md border-gray-300 text-sm focus:ring-gray-900 focus:border-gray-900 shadow-sm resize-y">{{ old('description', $product->description) }}</textarea>
+                    <!-- In The Box Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60">
+                            <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">In The Box</h2>
+                        </div>
+                        <div class="p-5">
+                            <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                <textarea name="whats_in_box" rows="2"
+                                          class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white resize-y placeholder-gray-300"
+                                          placeholder="e.g. Phone, Cable, Adapter...">{{ old('whats_in_box', $product->whats_in_box) }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60">
+                            <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Description</h2>
+                        </div>
+                        <div class="p-5">
+                            <div class="relative border-l-4 border-gray-200 focus-within:border-l-orange-400 transition-colors rounded-r-md">
+                                <textarea name="description" rows="4"
+                                          class="block w-full border border-l-0 border-gray-200 rounded-r-md text-sm focus:ring-0 focus:border-gray-300 py-2 px-3 bg-white resize-y placeholder-gray-300"
+                                          placeholder="Describe the product condition, features...">{{ old('description', $product->description) }}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>

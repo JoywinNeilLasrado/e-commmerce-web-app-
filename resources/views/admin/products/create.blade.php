@@ -178,27 +178,22 @@
                 </div>
 
                 <!-- Status -->
-                <div class="flex items-center space-x-6">
-                    <div class="flex items-center">
-                        <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded">
-                        <label for="is_active" class="ml-2 block text-sm text-gray-900">
-                            Active (Visible)
-                        </label>
-                    </div>
-
-                    <div class="flex items-center">
-                        <input id="is_featured" name="is_featured" type="checkbox" value="1" {{ old('is_featured') ? 'checked' : '' }} class="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded">
-                        <label for="is_featured" class="ml-2 block text-sm text-gray-900">
-                            Featured Product
-                        </label>
-                    </div>
-
-                    <div class="flex items-center">
-                        <input id="is_available" name="is_available" type="checkbox" value="1" {{ old('is_available', true) ? 'checked' : '' }} class="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded">
-                        <label for="is_available" class="ml-2 block text-sm text-gray-900">
-                            Available for Purchase
-                        </label>
-                    </div>
+                <div class="flex items-center gap-6 flex-wrap">
+                    @foreach([
+                        ['id' => 'is_active',    'name' => 'is_active',    'label' => 'Active (Visible)',       'checked' => old('is_active',    true)],
+                        ['id' => 'is_featured',  'name' => 'is_featured',  'label' => 'Featured Product',       'checked' => old('is_featured',  false)],
+                        ['id' => 'is_available', 'name' => 'is_available', 'label' => 'Available for Purchase', 'checked' => old('is_available', true)],
+                    ] as $toggle)
+                    <label class="inline-flex items-center gap-3 cursor-pointer select-none" onclick="toggleSwitch(this)">
+                        <input id="{{ $toggle['id'] }}" name="{{ $toggle['name'] }}" type="checkbox" value="1" {{ $toggle['checked'] ? 'checked' : '' }} class="hidden">
+                        <span class="toggle-track relative inline-block w-14 h-8 rounded-full transition-all duration-300"
+                              style="background: {{ $toggle['checked'] ? 'linear-gradient(to right, #34d399, #60a5fa)' : '#d1d5db' }}">
+                            <span class="toggle-thumb absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300"
+                                  style="transform: {{ $toggle['checked'] ? 'translateX(24px)' : 'translateX(0)' }}"></span>
+                        </span>
+                        <span class="text-sm font-medium text-gray-700">{{ $toggle['label'] }}</span>
+                    </label>
+                    @endforeach
                 </div>
 
                 <div class="pt-6 border-t border-gray-200">

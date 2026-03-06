@@ -14,13 +14,34 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->only(['search', 'brand_id', 'condition_id', 'status']);
+
         $products = Product::with(['phoneModel.brand', 'condition'])
+            ->when($filters['search'] ?? null, function ($q, $search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('title', 'like', "%{$search}%")
+                       ->orWhere('sku', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['brand_id'] ?? null, function ($q, $brandId) {
+                $q->whereHas('phoneModel', fn ($q2) => $q2->where('brand_id', $brandId));
+            })
+            ->when($filters['condition_id'] ?? null, function ($q, $conditionId) {
+                $q->where('condition_id', $conditionId);
+            })
+            ->when(isset($filters['status']) && $filters['status'] !== '', function ($q) use ($filters) {
+                $q->where('is_active', (bool) $filters['status']);
+            })
             ->latest()
-            ->paginate(10);
-            
-        return view('admin.products.index', compact('products'));
+            ->paginate(10)
+            ->appends($filters);
+
+        $brands     = Brand::orderBy('name')->get();
+        $conditions = Condition::orderBy('name')->get();
+
+        return view('admin.products.index', compact('products', 'brands', 'conditions', 'filters'));
     }
 
     public function create()
