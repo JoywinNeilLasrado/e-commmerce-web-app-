@@ -78,6 +78,52 @@
         transform: translateY(-1px);
         box-shadow: 0 6px 20px rgba(17,24,39,0.4);
     }
+    .btn-danger {
+        width: 100%;
+        padding: 0.7rem 1.25rem;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-radius: 0.625rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(220,38,38,0.35);
+        letter-spacing: 0.02em;
+    }
+    .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(220,38,38,0.5);
+    }
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    .modal-overlay.active {
+        display: flex;
+    }
+    .modal-card {
+        background: #fff;
+        border-radius: 1.25rem;
+        max-width: 420px;
+        width: 100%;
+        overflow: hidden;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+        animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.94) translateY(12px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
     .section-title {
         font-size: 1rem;
         font-weight: 700;
@@ -286,6 +332,22 @@
                     </div>
                 </div>
 
+                {{-- Danger Zone Card --}}
+                <div class="card-section" style="border-color: #fecaca;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #fff1f2, #fff5f5); border-bottom-color: #fecaca;">
+                        <div class="card-icon" style="background: linear-gradient(135deg,#fee2e2,#fecaca);">🗑️</div>
+                        <span class="section-title" style="color:#dc2626;">Danger Zone</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-sm text-gray-600 mb-1">Permanently delete your account and all associated data.</p>
+                        <p class="text-xs text-red-500 font-medium mb-4">⚠️ This action cannot be undone.</p>
+                        <button type="button" onclick="openDeleteModal()"
+                                class="btn-danger">
+                            Delete My Account
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
             {{-- RIGHT: Address Book --}}
@@ -473,6 +535,33 @@
         }
     }
 
+    function openDeleteModal() {
+        document.getElementById('delete-account-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('delete_password').focus(), 100);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('delete-account-modal').classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('delete_password').value = '';
+    }
+
+    // Close modal on overlay click
+    document.getElementById('delete-account-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    // Re-open modal if there's a password validation error from delete attempt
+    @if($errors->has('password') && session()->has('delete_attempted'))
+        document.addEventListener('DOMContentLoaded', () => openDeleteModal());
+    @endif
+
     // Auto-open address form if there are validation errors in the address section
     @if($errors->hasAny(['label','full_name','phone','address_line_1','city','state','postal_code','country']))
         document.addEventListener('DOMContentLoaded', () => {
@@ -482,3 +571,60 @@
 </script>
 
 @endsection
+
+{{-- Delete Account Confirmation Modal --}}
+<div id="delete-account-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+
+        {{-- Modal Header --}}
+        <div style="padding:1.5rem 1.5rem 0; display:flex; align-items:center; gap:0.75rem;">
+            <div style="width:2.5rem;height:2.5rem;border-radius:0.75rem;background:linear-gradient(135deg,#fee2e2,#fecaca);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🗑️</div>
+            <div>
+                <h2 id="modal-title" style="font-size:1rem;font-weight:700;color:#111827;margin:0;">Delete Account</h2>
+                <p style="font-size:0.75rem;color:#6b7280;margin:0;">This cannot be undone</p>
+            </div>
+            <button onclick="closeDeleteModal()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#9ca3af;padding:0.25rem;border-radius:0.375rem;line-height:1;" aria-label="Close">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        {{-- Modal Body --}}
+        <div style="padding:1.25rem 1.5rem;">
+            <div style="background:#fff1f2;border:1px solid #fecaca;border-radius:0.75rem;padding:0.875rem;margin-bottom:1.25rem;">
+                <p style="font-size:0.8125rem;color:#dc2626;margin:0;">You are about to permanently delete your account, including all your orders history, addresses, and reviews.</p>
+            </div>
+
+            <form id="delete-account-form" action="{{ route('profile.destroy') }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div>
+                    <label for="delete_password" class="input-label">Confirm your password to continue</label>
+                    <input type="password" name="password" id="delete_password"
+                           class="input-field" placeholder="Enter your current password"
+                           autocomplete="current-password">
+                    <div id="delete-password-error" style="display:none;margin-top:0.375rem;">
+                        <p style="font-size:0.75rem;color:#dc2626;display:flex;align-items:center;gap:0.25rem;">
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ session('delete_error') ?? 'Incorrect password. Please try again.' }}
+                        </p>
+                    </div>
+                    @if($errors->has('password') && session()->has('delete_attempted'))
+                        <p style="font-size:0.75rem;color:#dc2626;margin-top:0.375rem;">{{ $errors->first('password') }}</p>
+                    @endif
+                </div>
+
+                <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+                    <button type="button" onclick="closeDeleteModal()"
+                            style="flex:1;padding:0.65rem 1rem;font-size:0.875rem;font-weight:600;color:#374151;background:#fff;border:1.5px solid #e5e7eb;border-radius:0.625rem;cursor:pointer;transition:all 0.2s;">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            style="flex:1;padding:0.65rem 1rem;font-size:0.875rem;font-weight:600;color:#fff;background:linear-gradient(135deg,#dc2626,#b91c1c);border:none;border-radius:0.625rem;cursor:pointer;box-shadow:0 4px 12px rgba(220,38,38,0.35);transition:all 0.2s;">
+                        Yes, Delete Account
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

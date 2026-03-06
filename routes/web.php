@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::post('/profile/address', [\App\Http\Controllers\ProfileController::class, 'storeAddress'])->name('profile.address.store');
     Route::delete('/profile/address/{address}', [\App\Http\Controllers\ProfileController::class, 'destroyAddress'])->name('profile.address.destroy');
+    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Reviews
     Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');

@@ -123,4 +123,41 @@ class ProfileTest extends TestCase
         $response->assertStatus(403);
         $this->assertDatabaseHas('addresses', ['id' => $address->id]);
     }
+
+    public function test_user_can_delete_own_account()
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->actingAs($user)->delete(route('profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/');
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
+
+    public function test_delete_account_requires_correct_password()
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->actingAs($user)->delete(route('profile.destroy'), [
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertSessionHasErrors('password');
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
+    }
+
+    public function test_guest_cannot_delete_account()
+    {
+        $response = $this->delete(route('profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('login'));
+    }
 }

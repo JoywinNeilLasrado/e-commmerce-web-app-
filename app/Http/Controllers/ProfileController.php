@@ -162,4 +162,21 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Address deleted successfully.');
     }
+
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
+
+        return redirect('/')->with('status', "Your account has been permanently deleted. We're sorry to see you go!");
+    }
 }
