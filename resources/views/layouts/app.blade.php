@@ -327,10 +327,10 @@
                 <div>
                     <h4 class="text-white font-semibold text-sm mb-5">Support</h4>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-sm hover:text-white transition-colors">Warranty Policy</a></li>
-                        <li><a href="#" class="text-sm hover:text-white transition-colors">Returns & Refunds</a></li>
-                        <li><a href="#" class="text-sm hover:text-white transition-colors">Shipping Info</a></li>
-                        <li><a href="#" class="text-sm hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="{{ route('support.warranty') }}" class="text-sm hover:text-white transition-colors">Warranty Policy</a></li>
+                        <li><a href="{{ route('support.returns') }}" class="text-sm hover:text-white transition-colors">Returns & Refunds</a></li>
+                        <li><a href="{{ route('support.shipping') }}" class="text-sm hover:text-white transition-colors">Shipping Info</a></li>
+                        <li><a href="{{ route('support.contact') }}" class="text-sm hover:text-white transition-colors">Contact Us</a></li>
                     </ul>
                 </div>
 

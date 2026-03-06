@@ -18,6 +18,12 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/compare', [\App\Http\Controllers\CompareController::class, 'index'])->name('compare.index');
 Route::get('/sell', [\App\Http\Controllers\SellController::class, 'index'])->name('sell');
 
+// Support pages
+Route::get('/warranty-policy', [\App\Http\Controllers\SupportController::class, 'warranty'])->name('support.warranty');
+Route::get('/returns-refunds', [\App\Http\Controllers\SupportController::class, 'returns'])->name('support.returns');
+Route::get('/shipping-info', [\App\Http\Controllers\SupportController::class, 'shipping'])->name('support.shipping');
+Route::match(['get','post'], '/contact', [\App\Http\Controllers\SupportController::class, 'contact'])->name('support.contact');
+
 // PayU Response (Public to handle callbacks without session)
 Route::post('/payment/payu/response', [CheckoutController::class, 'payuResponse'])->name('payment.payu.response');
 
