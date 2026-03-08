@@ -1,0 +1,18 @@
+{
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/vite": "^4.2.1",
+    "autoprefixer": "^10.4.27",
+    "axios": "^1.13.6",
+    "laravel-vite-plugin": "^2.1.0",
+    "lodash": "^4.17.23",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "vite": "^7.3.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "type": "module"
+}

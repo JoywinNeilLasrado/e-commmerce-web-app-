@@ -3,21 +3,23 @@
 @section('title', $page->title . ' — PhoneShop')
 
 @section('content')
-<div>
+<div class="bg-[#F0FAFE] min-h-screen">
 
     {{-- Hero --}}
-    <div style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); padding: 4rem 1rem 5rem;">
-        <div class="max-w-4xl mx-auto text-center">
-            <div style="width:4rem;height:4rem;background:rgba(255,255,255,0.1);border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.25rem;">🛡️</div>
-            <h1 class="text-4xl font-extrabold text-white mb-3 tracking-tight">{{ $page->title }}</h1>
+    <div class="bg-transparent border-b border-gray-100 py-16">
+        <div class="max-w-4xl mx-auto px-4 text-center mt-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-50 text-gray-900 border border-gray-200 mb-6 shadow-sm">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">{{ $page->title }}</h1>
             @if($page->meta_description)
-            <p class="text-indigo-200 text-lg max-w-xl mx-auto">{{ $page->meta_description }}</p>
+            <p class="text-gray-500 text-lg max-w-xl mx-auto">{{ $page->meta_description }}</p>
             @endif
         </div>
     </div>
 
     {{-- Dynamic DB Content --}}
-    <div class="bg-gray-50 -mt-6 pt-10 pb-20" style="border-radius:1.5rem 1.5rem 0 0;">
+    <div class="bg-transparent py-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8"
                  style="line-height:1.75;">
@@ -36,9 +38,8 @@
             </div>
             <div class="text-center">
                 <a href="{{ route('support.contact') }}"
-                   class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white text-sm"
-                   style="background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 4px 14px rgba(102,126,234,.4);">
-                    Contact Support →
+                   class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white text-sm bg-gray-900 hover:bg-black transition-colors shadow-lg shadow-gray-900/20">
+                    Contact Support
                 </a>
             </div>
         </div>

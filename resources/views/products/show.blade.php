@@ -3,7 +3,7 @@
 @section('title', $product->title . ' — PhoneShop')
 
 @section('content')
-<div class="bg-white">
+<div class="bg-[#F0FAFE] min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
 
         <!-- Breadcrumb -->

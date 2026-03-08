@@ -3,9 +3,9 @@
 @section('title', 'Sell Your Phone — PhoneShop')
 
 @section('content')
-<div class="bg-gray-50 min-h-screen pt-24 pb-10">
+<div class="bg-[#F0FAFE] min-h-screen pt-24 pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="bg-[#232A39] rounded-3xl overflow-hidden shadow-2xl">
             <div class="grid lg:grid-cols-2 gap-0">
                 <!-- Left: Content -->
                 <div class="p-12 lg:p-16">
@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 <!-- Right: Steps -->
-                <div class="bg-gray-800/50 p-12 lg:p-16 flex flex-col justify-center">
+                <div class="bg-[#283142] p-12 lg:p-16 flex flex-col justify-center">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">How it works</p>
                     <div class="space-y-8">
                         <div class="flex items-start gap-4">

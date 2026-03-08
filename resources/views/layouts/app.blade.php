@@ -64,6 +64,10 @@
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('sell') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600' }}">
                             Sell
                         </a>
+                        <a href="{{ route('support.contact') }}" 
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('support.contact') ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600' }}">
+                            Contact Us
+                        </a>
                     </div>
                 </div>
 
@@ -215,6 +219,7 @@
                     <a href="{{ route('products.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('products.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Shop</a>
                     <a href="{{ route('compare.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('compare.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Compare</a>
                     <a href="{{ route('sell') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('sell') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Sell</a>
+                    <a href="{{ route('support.contact') }}" class="block px-3 py-2 rounded-lg text-base font-medium {{ request()->routeIs('support.contact') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">Contact Us</a>
                     
                     <div class="border-t border-gray-100 my-2"></div>
                     
