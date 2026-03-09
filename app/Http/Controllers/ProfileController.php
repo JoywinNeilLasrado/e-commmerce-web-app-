@@ -143,6 +143,9 @@ class ProfileController extends Controller
     public function destroyAddress(Address $address)
     {
         if ($address->user_id !== auth()->id()) {
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
             abort(403);
         }
 

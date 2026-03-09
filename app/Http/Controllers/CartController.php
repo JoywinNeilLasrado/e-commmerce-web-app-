@@ -81,6 +81,9 @@ class CartController extends Controller
         ]);
 
         if ($cartItem->cart->user_id !== Auth::id()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
             abort(403);
         }
 
@@ -112,6 +115,9 @@ class CartController extends Controller
     public function destroy(CartItem $cartItem)
     {
         if ($cartItem->cart->user_id !== Auth::id()) {
+            if (request()->routeIs('api.*') || request()->wantsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
             abort(403);
         }
 

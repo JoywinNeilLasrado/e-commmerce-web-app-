@@ -30,6 +30,14 @@ class AddressController extends Controller
 
         $user->addresses()->create(array_merge($validated, ['is_default' => $isDefault]));
 
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Address added successfully.',
+                'address' => $user->addresses()->latest()->first() // or assign to $address above
+            ]);
+        }
+
         return back()->with('success', 'Address added successfully.');
     }
 }

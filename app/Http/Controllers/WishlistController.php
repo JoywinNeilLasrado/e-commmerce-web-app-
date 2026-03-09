@@ -41,7 +41,7 @@ class WishlistController extends Controller
             $message = 'Added to wishlist.';
         }
 
-        if (request()->ajax() || request()->wantsJson()) {
+        if (request()->routeIs('api.*') || request()->wantsJson()) {
             return response()->json([
                 'status' => $status,
                 'message' => $message,
