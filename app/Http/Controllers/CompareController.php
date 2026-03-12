@@ -27,8 +27,8 @@ class CompareController extends Controller
             ->values();
         }
 
-        // All active products for the selector dropdowns
-        $allProducts = Product::with('phoneModel.brand')
+        // All active products for the selector dropdowns - Optimized down to prevent payload corruption
+        $allProducts = Product::select('id', 'title', 'phone_model_id', 'condition_id', 'price', 'sku', 'stock', 'is_featured')
             ->where('is_active', true)
             ->orderBy('title')
             ->get();

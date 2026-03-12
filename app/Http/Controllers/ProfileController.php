@@ -140,10 +140,10 @@ class ProfileController extends Controller
         return back()->with('success', 'Address updated successfully.');
     }
 
-    public function destroyAddress(Address $address)
+    public function destroyAddress(Request $request, Address $address)
     {
         if ($address->user_id !== auth()->id()) {
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
             abort(403);
@@ -159,7 +159,7 @@ class ProfileController extends Controller
             }
         }
 
-        if (request()->routeIs('api.*') || request()->wantsJson()) {
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
             return response()->json(['message' => 'Address deleted successfully.']);
         }
 

@@ -102,8 +102,8 @@ class ProductController extends Controller
         $userReview = null;
         if (!$request->routeIs('api.*') && auth()->check()) {
             $userReview = $product->reviews()->where('user_id', auth()->id())->first();
-        } elseif ($request->routeIs('api.*') && auth('sanctum')->check()) {
-            $userReview = $product->reviews()->where('user_id', auth('sanctum')->id())->first();
+        } elseif ($request->routeIs('api.*') && auth('api')->check()) {
+            $userReview = $product->reviews()->where('user_id', auth('api')->id())->first();
         }
 
         if ($request->routeIs('api.*') || $request->wantsJson()) {

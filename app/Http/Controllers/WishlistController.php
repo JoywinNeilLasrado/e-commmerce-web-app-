@@ -26,7 +26,7 @@ class WishlistController extends Controller
         return view('wishlist.index', compact('products'));
     }
 
-    public function toggle(Product $product)
+    public function toggle(Request $request, Product $product)
     {
         $user = Auth::user();
         $wishlist = $user->wishlists()->where('product_id', $product->id)->first();
@@ -41,7 +41,7 @@ class WishlistController extends Controller
             $message = 'Added to wishlist.';
         }
 
-        if (request()->routeIs('api.*') || request()->wantsJson()) {
+        if ($request->routeIs('api.*') || $request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'status' => $status,
                 'message' => $message,

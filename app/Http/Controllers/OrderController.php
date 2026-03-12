@@ -47,10 +47,10 @@ class OrderController extends Controller
         return view('orders.show', compact('order'));
     }
 
-    public function cancel(Order $order, PayUService $payUService)
+    public function cancel(Request $request, Order $order, PayUService $payUService)
     {
         if ($order->user_id !== Auth::id()) {
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
             abort(403);
@@ -58,7 +58,7 @@ class OrderController extends Controller
 
         // Only allow cancellation if order is pending or processing
         if (!in_array($order->status, ['pending', 'processing'])) {
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This order cannot be cancelled as it is already ' . $order->status . '.'
@@ -104,7 +104,7 @@ class OrderController extends Controller
 
             if (!$refundStatus) {
                 DB::rollBack();
-                if (request()->routeIs('api.*') || request()->wantsJson()) {
+                if ($request->routeIs('api.*') || $request->wantsJson()) {
                     return response()->json([
                         'success' => false,
                         'message' => $refundMessage
@@ -122,7 +122,7 @@ class OrderController extends Controller
 
             DB::commit();
 
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => $refundMessage,
@@ -136,7 +136,7 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Order Cancellation Error: ' . $e->getMessage());
             
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'An error occurred while cancelling your order. Please try again.'

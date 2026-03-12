@@ -112,10 +112,10 @@ class CartController extends Controller
         return back()->with('success', 'Cart updated.');
     }
 
-    public function destroy(CartItem $cartItem)
+    public function destroy(Request $request, CartItem $cartItem)
     {
         if ($cartItem->cart->user_id !== Auth::id()) {
-            if (request()->routeIs('api.*') || request()->wantsJson()) {
+            if ($request->routeIs('api.*') || $request->wantsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
             abort(403);
@@ -123,7 +123,7 @@ class CartController extends Controller
 
         $cartItem->delete();
 
-        if (request()->routeIs('api.*') || request()->wantsJson()) {
+        if ($request->routeIs('api.*') || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Item removed from cart.'
